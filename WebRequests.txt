@@ -1,0 +1,153 @@
+HTTP Fundamentals:
+1. HyperText Transfer Protocol(HTTP):
+- Die meisten Web-Anwendungen interagieren mit dem Internet durch das Web oder durch Mobile Anwendungen
+- Internet Kommunikation findet meistens mit dem HTTP Protokoll statt
+- HTTP Kommunikation basiert auf einen Client und einem Server
+- Der Standard Port fuer HTTP Kommunikation ist Port 80
+
+Uniform Resource Locator(URL):
+	- Ressourcen werden ueber HTTP via URL aufgerufen
+	- Eine URL ist folgendermassen aufgebaut:
+		- Scheme : https:// : Identifiziert das Protokol endet mit ://
+		- User Info : admin:passwort@ : Optional enthaelt Credentials seperiert mit : und endet mit @
+		- HOST : www.google.de : Der Host gibt den Standord der Ressource an
+		- Port : :80 : Der Port ist duch : von dem Host getrennt, wenn kein Port gegeben ist wird der Standard Port des Protkolls genommen
+		- Path : /dash.html : Weist auf die Datei hin die aufgerufen werden soll
+		- query string : ?login=true : Startet mit ? besteht aus Parametern und Werte die durch ein = geteilt werden mit & koennen mehrere Parameter abgefragt werden 
+		- Fragment: #status : Fragmente werden von Browser angefragt und finden Teile auf einer Seite wie Header oder eine Section
+
+cURL:
+	- CURL ist eine Befehl fuer die Kommandozeile welches Primaer HTTP aber auch viele andere unterstuetzt
+	- Zeigt die Website ohne rendern auf
+	- Mit curl -0 die aufrufende Website wird gespeichert
+
+2. Hypertext Transfer Protocol Secure(HTTPS):
+- Daten die mit HTTP uebertragen werden sind unverschluesselt
+- Das bedeutet, dass jeder einen Man in the Middle (MiTM) Attacke ausfuehren kann und die Daten sehen kann
+- HTTPS ist die verschluesselte Variante von HTTP 
+
+HTTPS Flow:
+	- Wenn der User eine Website mit HTTPS aufruft sendet er dem Webserver ein "Client Hello" Paket um Informationen ueber sich selbst freizugeben
+	- Der Server antwortet mit einem "Server Hello" Paket gefolgt von einem Schluesselautausch um SSL Zertifikat auszutauschen
+	- Der Client verifiziert den Schluessel/Zertifikat und sendet das eigene SSL Zertifikat
+	- Danach wird ein verschluesselter Handshake durchgefuehrt um zu pruefen ob die Verschluesselung funktioniert
+
+3. HTTP Requests and Responses
+- HTTP Kommunikation besteht aus HTTP Anfragen-und Antworten
+- Eine Anfrage entaehlt alle Details die wir vom Server anfordern, Resourcen (URL, Pfad, Parameter, usw), alle Anfragedaten, Headers oder Optionen die wir spezifizieren koennen
+- Wenn der Server die HTTP Anfrage erhaltenhat sendet der Webserver die HTTP Antwort, diese enthaelt den response Code und erhaelt vielleicht die Resource Data wenn der Sender dazu Zugang hat
+
+- HTTP Request:
+	- Die erste Zeile besteht aus 3 Komponenten: 
+		- Methode: Die HTTP Methode
+		- Path: Der Pfad auf die Ressource die aufgerufen werden soll
+		- HTTP-Version: Die HTTP Version die benutzt wird
+	- Die naechsten Zeilen bestehen aus Wertepaare wie Host, Cookie usw
+	- Danach enthaelt die Antwort den Body und die Daten
+
+- HTTP Response:
+	- Die erste Zeile einer HTTP Antwort enthaelt 2 Felder:
+		- HTTP-Version: Die benutzte HTTP Version
+		- Response Code: Der Response Code als Beispiel steht 200 fuer OK
+	- Die Response kann mit einem HTTP Body enden
+	- Meistens enthaelt der HTTP ein HTML Code oder JSON Objekte
+
+- cURL:
+	- Mit curl WEBSITE -v kann die gesamte HTTP Anfrage/Antwort zurueckgegeben werden
+
+
+4. HTTP Headers:
+- HTTP Headers senden Informationen zwischen dem Clienten und dem Server
+- Manche Headers werden nur fuer Anfragen oder Antworten genutzt
+- Headers koennen in 5 Kategorien unterteilt werden: General Headers, Entity Headers, Request Headers, Response Headers, Security Headers alle haben verschiedene Headerinhalte
+
+- General Headers:
+	- Werden in Antworten und Anfragen benutzt
+	- Beschreiben die Nachricht und nicht den Inhalt
+
+- Entity Headers:
+	- Koennn ebenso fuer Antworten und Anfragen benutzt werden
+	- Wird benutzt um den Inhalt zu beschreiben
+	- Sind meistens bei POST oder PUT Anfragen zu finden
+
+- Request Headers:
+	- Ist eine HTTP Transaktion
+	- Die Headers werden benutzt 
+
+- Response Headers:
+	- Kann in HTTP Antworten benutzt werden und bezieht sich nicht auf den Inhalt
+
+- Security Headers:
+	- Definiert verschiedene Sicherheitsoptionen
+
+###################################################################################################
+HTTP Methods:
+1. HTTP Methods and Codes:
+- HTTP unterstuetzt viele verschiedene Methoden um auf eine Ressource zuzugreifen
+- Es gibt verschiedene Methoden um Informationen, Formulare, Dateien zu einem Server zu senden
+- Die Methoden teilen dem Server mit wie er mit der Anfrage umzugehen hat
+
+- Request Methods:
+	- GET: Fragt eine Ressource an. Weitere Informationen koennen an die URL mit ?parameter=wert angehangren werden
+	- POST: Senedet Daten zu einem Server. Kann verschiedene Eingaben wie Text, PDFs und andere Formen von binaeren Daten schicken. Die Daten werden dem HTTP Body angehangen
+	- HEAD: Fragt den Header an der bei einer GET Anfrage gesendet werden wuerde. Laedt nur den Header runter und nicht den Body. Wird meistens dafuer benutzt um die Groesse der herunterladenen Ressource zu checken.
+	- PUT: Erstellt neue Ressourcen auf einem Server. Diese Methode ohne Kontrollen zu erlauben kann dazu fuehren, dass schaedliche Software hochgeladen wird
+	- DELETE: Entfernt eine Ressource auf einem Server. Wenn nicht richtig gesichert kann es zu einem Denial of Service(DoS) fuehren indem kritische Dateien geloescht werden. 
+	- OPTIONS: Gibt Informationen ueber den Server zurueck, wie Methoden die dieser akzeptiert
+	- PATCH: Modifiziert Ressourcen an einem spezifischen Ort 
+
+- Response Methods:
+	- HTTP Status Codes sind 3 stellig und werden genutzt um den Status der Anfrage zu checken
+	- 1XX: Stellt Informationen und hat keinerlei Wirkung auf die Anfrage
+	- 2XX: Wird ausgegeben wenn Anfrage erfolgreich bearbeitet worden ist
+	- 3XX: Wird ausgegeben wenn der Server die Anfrage umleitet
+	- 4XX: Wird ausgegeben wenn die Anfrage vom User falsch ausgefuellt ist z.B. falsches Format
+	- 5XX: Wird ausgegeben wenn ein Problem auf dem Server auftaucht
+
+2. GET:
+- Die Parameter werden bei der GET Methode an die URL angehangen 
+
+HTTP Basic Auth:
+	- Ist ein Verfahren mit den sich der Nutzer eines Browsers gegenueber des Webserver authentisieren kann.
+	- Stell ein Webserver fest, dass fuer eine Seite User und Passwort noetig ist sendet er den Stautscode 401 der Browser ermittelt dann die zur Anmeldung notwendigen Daten und sendet das Ergebnis dem Server.
+
+3. POST
+- Wenn Dateien transportiert werden sollen benutzten die meisten Web-Anwendungen die POST Methode
+- POST plaziert Parameter in den Body der HTTP Anfrage das hat 3 Hauptvorteile:
+	- Lack of Logging: Es ist nicht effizient fuer einen Server alle hochgeladenen Dateien zu loggen, da POST oft fuer grosse Dateien genutzt wird
+	- Less Encoding Requirements: Da der URL keine zusaetzlichen Zeichen hinzugefuegt werden muss ist die URL leichert zu teilen
+	- More data can be sent: Die URL hat einen maximale Laenge die auf den meisten Browsern anders ist. Eine URL ist maximal 2000 Zeichen lang und kann deswegen nicht so viele Daten uebertragen
+
+4. CRUD API:
+- API koennen in Web-Anwendungen umgeleitet werden
+
+APIs:
+	- Die meisten APIs arbeiten mit einer Datenbank, sodass eine Tabelle angegeben weren muss
+	- Wenn die Tabelle City heisst und die Zeile die geaendert werden soll die mit dem Stadtnamen London ist wuerde der Befehl wie folgt aussehen:
+	- curl -X PUT http://<SERVER_IP>:<PORT>/api.php/city/london ...SNIP...
+
+CRUD: 
+	- Es koennen verschiedene HTTP Methoden ausgefuehrt auf einer Zeile ausgefuehrt werden, im allgemeinen fuer eine Datenbank 4 Methoden
+	- Create : Post
+	- Read: GET
+ 	- Update: PUT
+	- Delete: DELETE
+
+Read:
+	- curl http://SERVER:PORT/api.php/city/london
+	- Hier lesen wir die Datenbank in der Spalte City nach London
+
+Create: 
+	- Um einen neuen Eintrag zu erfassen wird die HTTP POST Anfrage benutzt
+	- curl -X POST http://<SERVER_IP>:<PORT>/api.php/city/ -d '{"city_name":"HTB_City", "country_name":"HTB"}' -H 'Content-Type: application/json'
+	- Mit curl -s http://<SERVER_IP>:<PORT>/api.php/city/HTB_City kann dieser Eintrag dann wieder ausgegeben werden
+
+Update: 
+	- Die HTTP PUT Anfrage wird benutzt um einen Eintrag zu aendern
+	- Es ist aenhlich wie Create nur, dass bei Update die zu aendernde Zeile zu definieren ist
+	- curl -X PUT http://<SERVER_IP>:<PORT>/api.php/city/london -d '{"city_name":"New_HTB_City", "country_name":"HTB"}' -H 'Content-Type: application/json'
+
+Delete:
+	- Um eine Zeile zu loeschen wird die HTTP DELETE Methode benutzt
+	- curl -X DELETE http://<SERVER_IP>:<PORT>/api.php/city/New_HTB_City
+	- Loescht die Stadt New_HTB_City aus der Datenbank
