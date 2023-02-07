@@ -1,0 +1,714 @@
+IntroductionToActiveDirectory:
+1. Why Active Directory:
+- Actice Directory(AD) ist ein Verzeichnis Service in Windows
+- Ist ein zentrales Managementtool womit User, Computer, Gruppen, Geraete, Datein shares, Gruppen Rechte, Netzwerkgeraete usw
+- AD stellt Funktionen fuer Authentifizierung und authorisieren zur Verfuegung
+	- Authentifizierung:
+		- die Pruefung des Identitaetsnachweises auf seine Authentizitaet vom Server zum User
+	- Authentisierung/authentication :
+		- Der Nachweis einer Identitaet vom User zum Server
+	- Autorisierung/authorization:
+		- Rechtevergabe oder Rechtepruefung
+- Die AD ist eine Read Only Datenbank die allen Nutzern in der Domaine verfuegbar ist
+- AD macht Informationen sehr einfach auffindbar fuer den Admin und User
+- Es ist ausserdem sehr skalierbar, unterstuetz Millionen von Objekte pro Domaine
+- 95% aller Fortune 500 arbeiten mit Active Directory
+
+###################################################################################################
+Active Directory Fundamentals:
+1. Active Directory Structure:
+- Ein Directory Service wie Active Directory Domain Services (AD DS) verschafft einer Organisation eine Moeglichkeit Verzeichnisdaten normalen Usern und Administratoren im gleichen Netzwerk bereitzustellen
+- AD DS speichert Usernamen und Passwoerter und verwaltet Rechte fuer User um an Informationen zu kommen
+- Es ist schwierig in grossen Umgebungen zu verwalten
+- Active Directory kann durch Schwachstellen eine grosse Bedrohung werden, weil man damit unbefugten Zugriff auf andere Datenbanken, Dateien, usw bekommen kann
+- Jeder Account kann die meisten Objekte aufzaehlen
+
+- Active Directory ist in einer Baumstruktur arrangiert, mit einem Forest der eine oder mehrere Domainen beeinhaltet, die auch Unterdomainen haben koennen
+- Eine Domaine ist eine Struktur diese enthaelt Objekte (User, Computer und Gruppen)
+- Es hat viele eingebaute Organizational Units (OUs) wie Domain Controller, Users, Computers
+- Andere OUs koennen erstellt werden
+- OUs koennen sub-OUs enthalten
+- Domains und Forest koennen miteinandere verbunden sein
+- Oft sind viele Domainen/Forests miteinandere durch eine trust relationship verbunden
+
+2. Active Directory Terminology:
+- Hier werden alle Schluesselbegriffe erklaert
+
+- Object:
+	- Ein Object kann als jede Ressource definiert werden wie ein OUs, Drucker, Users, Domains, Controller, usw.
+- Attribute:
+	- Jedes Objekt in Active Directory hat eine Menge an Eigenschaften
+	- Ein Computerobjekte enthaelt Attribute wie den Hostnamen und den DNSnamen
+	- Alle Attribute haben zugehoerigen LDAP Namen
+- Schema:
+	- Ein Active Directory ist der Blaupause fuer eine Unternehmensumgebung
+	- Definiert welche Arten von Objekte und zugehoerigen Attribute in der AD Datenbank existieren koennen
+	- Wenn ein Objekt aus einer Klasse erstellt ist, dies wird Instanziierung(instantiation) genannt, dieses Objekt wird Instanz einer Klasse genannt
+- Domain: 
+	- Eine Domaine ist eine logische Gruppe von Computern, Users, OUs, Gruppen, usw.
+	- Eine Domaine kann unabhaengig von einander betrieben werden
+	- Domainen koennen auch miteinandere verbunden werden via trust relationsship
+	- Die Domaine kann mit einer Stadt in einem Staat in einem Land verglichen werden
+- Forest:
+	- Ein Forst ist eine Sammlung von Domainen
+	- Es ist der oberste Container und enthalten alle AD Objekte
+	- Ein Forest kann eine oder mehrere Domainen besitzen 
+	- Kann mit einem Staat in der EU oder der USA verglichen werden
+- Tree:
+	- Ein Tree ist eine Sammlung von Active Directory Domainen die mit einem einzelnen Root Domain beginnt
+	- Ein Forest ist eine Sammlung von AD Trees
+	- Zwei Trees in dem gleichen Forest koennen nicht den gleichen Namen(Namespace) teilen
+- Container:
+	- Container Objekte enthalten andere Objekte und haben einen in der Hierachie vordefinierten Platz
+- Leaf:
+	- Leaf Objekte enthalten keine andere Objekte und sind am Ende der Hierachie zu finden
+- Global Unique Indentifier(GUID):
+	- Eine GUID ist ein einzigartige 128-Bit Wert der einem User, Gruppe oder Domaine zugewiesen wird
+	- Eine GUID Wert ist einzigartig im gesamten Unternehmen, wie MAC Adressen
+	- Jedes Objekt hat eine GUID
+	- Der GUID Wert ist in dem ObjectGUID Attribut gespeichert
+	- Der GUID Wert aendert sich nie und werden benutt um Objekte zu identifizieren
+- Security principals:
+	- Ist alles was das Betriebssytem authentisieren kann inklusive user, Computer accounts, Prozessoren/Threads welche auf einem Computer von einem User laufen
+	- In AD Security principals sind Domain Objekte die Zugriff auf andere Ressourcen in der gleichen Domaine verwalten
+	- Es kann auch lokale User Accounts und Security Groups geben die den Zugriff auf Ressourcen kontrollieren
+	- Werden nicht vom AD verwaltet sondern vom Security Accounts Manager (SAM)
+- Security Identifier(SID):
+	- Eine Security Identifier ist ein einzigartige Kennung fuer Security principal oder Security Group
+	- Jede Gruppe, Account oder Prozess hat einen eigenen SID
+	- Eine SID wird von der Domain Controller vergeben und kann nach einmaliger Vergabe auch nach Loeschung von Objekten nicht wiedervergeben werden
+	- Wenn der User sich in das System einloggt wird ein Access Token erstellt der den SID, die Rechte die gewaehrt wurden und andere SID von Gruppen bei denen der User enthalten ist erhaelt
+	- Der Token wird benutzt sobald der User eine Aktion auf dem Computer trifft
+	- Es gibt auch well-known SIDs fuer generische User und Gruppen wie die EVERYONE Gruppe
+- Distinguished Name(DN):
+	- Der DN beschreibt den vollstaendigen Pfad zu einem Objekt in einem AD
+- Relatice Distinguished Name(RDN):
+	- RDN ist ein Teil von einem DN der das Objekt einzigartig identifiziert unter dem jeweiligen Level in der Hierachie
+- sAMAccountName:
+	- Der sAMAccountName ist der Login Username
+	- Der Name ist einzigartig und ist maximal 20 Zeichen lang
+- userPrincipalName:
+	- Das userPrincipalName ist ein Attribut welches den User im AD identifiziert
+	- Das Attribut besteht aus einem Prefix(Account Name) und einem Suffix (Domain name)
+	- Das Attribut ist nicht verpflichtend
+- FSMO Roles:
+	- Am Anfang wenn es in AD mehrere Domain Controller(DC) gab konnte es dazu kommen, dass diese sich gestritten haben welche DC die Aenderung vornimmt
+	- Deswegen wurde ein Master DC eingefuehrt welcher entscheidet welche DC welche Aenderung vornimmt
+	- Wenn der Master DC down geht koenen keine Aenderugnen mehr vorgenommen werden
+	- Microsoft hat deswegen Flexible Single Master Operation(FSMO) eingefuehrt, das gibt DC die Faehigkeit weiterzuarbeiten ohne Unterbrechung
+	- Es gibt 5 Rollen in FSMO: 
+		- Schema Master
+		- Domain Naming Master
+		- Relative ID(RID) Master (one per domain)
+		- Primary Domain Controller (PDC) Emulator (one per domain)
+		- Infrastructure Master (one per domain)
+	- Alle 5 Rollen werden dem ersten DC in der Forest Root Domain in einem neuen AD Forest zugeschriebe
+	- Fuer jede neue Domaine die zum Forest hinzugefuegt wird wird die RID Master, PDF Emulator und Infrastructure Master Rollen neu zugeordnet in der neuen Domaine
+	- FSMO Rollen werden zugeordnet wenn der Domain Controller erstellt wird, Systemadmins koennen die Rollen uebertragen
+- Global Catlog:
+	- Eine Global Catalog(GC) ist ein Domain Controller der Kopien von allen Objekte in einem Active Directory Forest speichert
+	- Der GC speichert alle Kopien aller Objekte in der aktuellen Domaine und eine Teilkopie von anderen Domainen in anderen Forests
+	- GC erlaubt Nutzern und Anwendungen Informationen ueber Objekte in jeder Domaine des Forests zubekommen
+	- GC ist eine Einstellung die auf einem DC aktiviert werden kann und folgende Funktionen auszufuehren
+		- Authentification: erteilt Berechtigungen fuer Gruppen und User die zu der Domaine gehoeren
+		- Object search: Durchsucht einen Forst nach einem Objekt mit mindestens einem Attribut fuer ein Objekt
+- Read-Only Domain Controller(RODC):
+	- Speichert keine Kopien von Objekten
+	- Kann nur Forests nach Objekten durchsuchen
+- Replication:
+	- Replication passiert wenn Objekte aktualisiert oder von einem zu anderen Domain Controller uebertragen werden
+	- Wenn ein DC hinzugefuegt werden Connection Object erzeugt um Kopien zwischen den beiden zu verwalten
+	- Diese Verdindungen werden von Knowledge Consistency Checker(KCC) Service erstellt
+	- Replication gewährleistet das alle Aenderungen mit allen anderen DC in dem jeweiligen Forest synchronisiert werden
+Service Principal Name(SPN):
+	- Identifiziert eine Service eindeutig
+	- Diese werden von Kerberos authentication benutzt um Instanzen von einem Service mit einem Logon Account zu partnern
+	- Das erlaubt Client Anwendungen eine authentifizierung von dem Service anzufordern
+Group Policy Object(GPO):
+	- Sind virtuelle Sammlungen von Richtlinieneinstellungen
+	- Jedes GPO hat eine eindeutige GUID
+	- Eine GPO kann Einstellungen fuer ein Dateisysteme/Active Directory beeinhalten
+	- GPO Einstellungen koenen fuer auf User und Computer Objekte angwendet werden die sich in der gleichen Domaine befinden
+- Access Control List(ACL):
+	- Ist eine Sammlung von ACEs
+- Access Control Entites(ACEs):
+	- Identifiziert ein Trustee(User Account, Gruppen Account, Logon Session) und listet die Zugangsrechte auf
+- Discretionary Access Control List(DACL):
+	- Legt fest welche Sicherheitsprinzipien den Zugang zu einem Objekt gewaehren oder verweigern
+	- Besteht aus einer Liste von ACEs
+	- Wenn ein Prozess auf ein Sicherheitsobjekt zugreifen will checkt das System das ACEs im DACL Objekt
+	- Wenn das Objekt im DACL nicht existiert, dann kann jeder auf das Objekt zugreifen
+	- Wenn ein DACL existiert aber kein ACE, dann wird jeder Zugriff auf das Objekt verweigert
+- System Access Control List(SACL):
+	- Erlaubt dem Administrator die Zugrissversuche zu protokollieren
+	- ACEs gibt an welche Art von Zugriffsversuchen eine Erstellung von einem Security Event Log erzeugt
+- Fully Qualified Domain Name(FQDN):
+	- Ist der Komplette Name von einem spezifischen Computer oder Host
+	- Es wird in folgendem Format geschrieben: hostname.domainname.tld
+	- Es wird genutzt wenn der Host gesucht wird wenn die IP-Adresse nicht bekannt 
+Tombstone:
+	- Ist ein Container Objekt in AD welches ein geloeschtes AD Objekt enthaelt
+	- Wenn ein Objekt geloescht wird wird es in den Tombstone geschoben
+	- Danach beginnt der Tombstone Lifetime und das isDeleted Attribute eines Objekts wird auf TRUE gesetzt
+	- Wenn Tombstone Lifetime auf 0 ist wird das Objekt komplett geloescht
+	- Das Tombstone Lifetime kann vom Admin gesetzt werden, Microsoft empfiehlt eine Tombstone Lifetime von 180 Tagen
+	- Wenn ein Objekt in einer Domaine geloescht wird indem es kein Recycle Bin gibt wird das Objekt ein Tombstone Objekt. Wenn das passiert verliert das Objekt die meisten Attribute und wird in dem Deleted Objects Container plaziert fuer die Dauer der tombstoneLifetime. Es kann wieder hergestellt werden, die Attribute die verloren gegangen sind koennen nicht wieder hergestellt werden
+- AD Recycle Bin:
+	- Wenn der AD Recycle Bin aktiviert ist wird jeder geloeschte Objekt fuer eine bestimmt Zeit konserviert
+	- Standardmaessig wird ein Objekt fuer 60 Tage vorgehalten bevor es geloescht wird
+	- Der groesste Vorteil von AD Recycle Bin ist, dass das Objekt mit allen Attributen wieder hergestellt werden kann
+- SYSVOL:
+	- Das SYSVOL Verzeichnis speichert und teilt alle Public Files in der Domaine wie System Policies, Group Policy Settings, Logon/Logoff Scripts und oft verschiedene Scripts die verschiedene Aufgaben in der AD Umgebung erfuellen
+	- Der Inhalt des SYSVOL Verzeichnis wird von allen DCs uebernommen un vom File Replication Services(FRS) verteilt
+- AdminSDHolder:
+	- Ein AdminSDHolder Objekt verwaltet die ACLs fuer Mitglieder die als Priviliged markiert sind
+	- Der SDProp(SD Propagator) Prozess laeuft nach Plan auf dem PDC Emulator Domain Controller
+	- Dieser Prozess ueberprueft ob die richtigen ACL auf die Mitglieder der geschuetzten Gruppe zutreffen
+	- Wenn ein Angreifer einen boesartigen ACL Eintrag vornimmt der einem normalen User Rechte ueber einen Domain Admins Group User gibt wird dieser wenn der SDProp Prozess laeuft entfernt
+dsHeuristics:
+	- Das dsHeuristics Attribut ist ein String Wert der fuer Forest-wide Einstellungen verwendet wird
+	- Einer dieser Einstellung ist, dass built-in Gruppen wie Everyone nicht zur Protected Group List gehoeren koennen
+	- Gruppen in dieser Liste sind geschuetzt von Aenderungen via dem AdminSDHolder Objekt
+	- Wenn eine Gruppe ueber das Attribute dsHeuristics ausgeschlossen, werden Aenderungen die sie betreffen von dem SDProp Prozess nicht rueckgangig gemacht
+adminCount:
+	- Das adminCount Attribut bestimmt ob der SDProp Prozess einen User beschuetzt
+	- Weisst darauf hin ob das Objekt zu den Protected Objects gehoert oder gehoerte
+	- Ist der Wert gleich 0 heisst der User ist nicht beschuetzt, wenn der Wert gleich 1 ist wird der User beschuetzt
+Active Directory Users and Computers(ADUC):
+	- ADUC ist eine GUI Konsole mit der User,Gruppen, Computer und Kontakte in AD verwaltet werden koennen
+	- AD kann auch ueber die PowerShell verwaltet werden
+ADSI Edit:
+	- Ist ein GUI Tools um Objekte in AD zu verwalten
+	- Mit ADSI koennen Attribute und Objekte hinzugefuegt oder entfernt werden
+sIDHistory:
+	- Dieses Attribut enthaelt alle SIDs, die einem Objekt zugewiesen wurden
+	- Wird meistens genutzt wenn ein User von einer zur anderen Domaine umzieht
+NTDS.DIT:
+	- Die NTDS.DIT Datei kann als Herz in Active Directory verglichen werden
+	- Es wird auf dem Domain Controller unter C:\Windows\NTDS\ gespeichert
+	- Ist eine Datenbank die AD Daten wie Informationen ueber User, Group Objects, Group membershop und auch passwort hashes fuer alle User in der Domaine beeinhaltet
+	- Wenn die gesamte Domaine vollstaendig kompromittiert ist, kann ein Angreifer diese Datei abrufen, die Hashwerte abrufen und entweder durch einen Pass-the-Hash Angriff oder durch ein Tool wie Hashcat knacken
+
+3. Active Directory Objects:
+- Ein Objekt kann jegliche Ressource in einem Active Directory wie OUs, Printers, Users, Domain Controllers sein
+- Users:
+	- User sind leaf Objekts was heisst, dass sie keine Objekte enthalten koennen
+	- Ein User Objekt wird als Sicherheitsprinzipial betrachtet und hat einen Security identifier(SID) und einem globalen Unique Identifier(GUID)
+	- Ein User Objekt kann viele moegliche Attribute haben, wie display name, last login time, email address, account description usw
+	- Es gibt mehr als 800 moegliche Attribute fuer einen User
+	- Sind securable objects
+- Contacts:
+	- Representiert einen Externen User und enthaelt Informationen wie name, lastname, telephone number, email address
+	- Ist ein leaf object und ist kein securable object
+	- Hat keinen SID aber einen GUID
+	- Beispiel ist ein Lieferant oder Kunde
+- Printers:
+	- Ein Printer object verweist auf einen Drucker, der im AD Netz zugaenglich ist
+	- Hat keinen SID aber einen GUID
+	- Haben Attribute wie Name, Treiberinformation, Port Numbber, etc.
+- Computers:
+	- Ein computer object ist jeder Computer der dem AD Network beitritt (Workstation or Server)
+	- Computer objects sind leaf objects
+	- Sie sind securable objects und haben SID und GUID
+- Shared Folders:
+	- Ein shared folder object verweist auf einen shared folder auf den spezifischen Computer
+	- Sie koennen strengen Zugriffskontrollen unterliegen auf fuer Menschen ohne AD Konto
+	- Jeder der nicht expliziet Erlaubniss hat den Inhalt anzusehen wird der Zugang verweigert
+	- Attribute koennen name, location on the system, security accrss rights sein
+- Groups:
+	- Eine Gruppe ist ein Container objekt, da es andere Objekte enthalten kann
+	- Eine Gruppe ist ein securable object mit einer SID und einer GUID
+	- In AD sind Gruppen ein Weg wie User Permissions und Zugang zu securable objects verwaltet werden kann
+	- Nested Groups sind Gruppen innerhalb von Gruppen, was dazu fuehren kann, dass User unbeabsichtigte Rechte bekommen koennen, diese werden oft in Pentesting benutzt
+	- BloodHound ist ein Tool welches einem hilft ein Pfad in das Netzwerk zu finden
+	- Gruppen koennen Attribute wie name, description, membership und andere Gruppen zudenen es gehoert
+- Organizational Units(OUs):
+	- Ist ein Container fuer System Administratoren, in welchem aehnliche Objekte gespeichert werdenm um die Verwaltung zu erleichtern
+	- Werden oft fuer administrative Aufgaben genutzt ohne dem Nutzer admin Rechte zu gewaehren
+	- Einem Nutzer wird gewaehrt sein eigenes Passwort zuaendern haette dieser User admin rechte koennte er alle Passwoerter aendern
+	- Sind sehr nuetzlich um Group Policy Einstellung ueber eine Untergruppe von Usern und Gruppen innerhalb einer Domaene
+- Domain:
+	- Eine Domaine ist eine Struktur innerhab eines AD Netzwerks
+	- Domainen erhalten Objekte wie User, Computer
+	- Jede Domaine hat eine seperate Datenbank und Richtlinien die auf alle Objekte innerhalb einer Domaine angewendet werden koennen
+	- Manche Richtilinien sind standardmaessig wie die domain password policy
+- Domain Controller:
+	- Domain Controller sind das Gehirn eines AD Netzwerks 
+	- Sie bearbeiten Authentifizierungsanfragen, verifizieren User und kontrollieren wer auf Ressourcen in der Domaene zugreifen darf
+	- Priviligierte Zugriffsanfragen basieren auf dem Benutzer zugewiesene Rollen
+	- Es setzt Sicherheitsrichtlinien durch und speichert Informationen ueber jedes andere Objekt in der Domaine
+- Sites:
+	- Eine Site(Standort) ist eine Gruppe von Computern in einem oder mehreren Teilnetzen die durch eine Hochgeschwindigkeitsverbindung miteinandere verbunden sind
+	- Werden verwendet um Replikationen zwischen Domain Controller effizient zu gestalten
+- Built-in:
+	- Ist ein Container welcher alle Standard Gruppen in einer AD Domain umfasst
+- Foreign Security Principals:
+	- Eine Foreign Security Principal(FSP) ist ein Objekt welches ein Security principal in einem trusted external forest representiert
+	- Diese werden erstellt wenn ein Objekt wie user, group, computer von einem externen Forest zu einer Gruppe von der aktuellen domaine hinzugefuegt wird
+	- Eine FSP wird automatisch erzeugt wenn ein Security principal zu einer Gruppe hinzugefuegt wird
+	- FSPs werden in einem spezifischem Container namens ForeignSecurityPrincipals erstellt
+4. Active Directory Functionality:
+- Es gibt 5 Flexible Single Master Operation(FSMO) Rollen:
+	- Schema Master: Diese Rolle verwaltet die Lese-/Schreibkopie des AD-Schemas, das alle Attribute definiert , die auf ein Objekt in AD zutreffen koennen
+	- Domain Naming Master: Verwaltet die Domain Namen und versichrt, dass keine zwei Domainen den gleichen Namen in dem gleichen Forest haben
+	- Relative ID(RID) Master: Weist anderen DCs innerhalb der Domaine Bloecke von RIDs zu. Stellt sicher, dass mehrere Objekte nicht die gleiche SID haben. 
+	- PDC Emulator: Ist der massgebliche DC in einer Domaine und wuerde Authentifizierungsanfragen und Kenntwortaenderungen uebernehmen und verwaltet Group Policy Objects (GPOs). Verwaltet ausserdem die Zeit in der Domaine 
+	- Infrastructure Master: Die Rolle uebersetzt GUIDs, SDIs, und DNs zwischen Domainen. Diese Rolle wird in einer einzigen Gesamtstruktur verwendet. Wenn die Rolle nicht richtig funktioniert werden die ACLs die SIDs anstelle des vollstaendig aufgeloesten Namen angezeigt
+
+- Domain and Forest Functional Levels:
+	- Microsoft hat Funktionsstufen eingefuehrt, um die verschiedenen Funktionen und Moeglichkeiten zu bestimmen die in AD Domain Services auf Domain und Forest ebene verfuegbar sind
+- Trusts:
+	- Ein Trust wird benutzt wenn Forst to Forest oder Domain to Domain authentication, damit erlaubt es Nutzern Ressourcen auch ausserhalb einer Domaine oder des Forest zu erreichen
+	- Ein Trust erstellt ein Link zwischen authenfifikations Systemen von zwei Domainen oder Forests
+	- Trust koennen transitive und non-transitive sein
+		- transivite: Der Trust vertraut auch Objekten den der Child Domain vertraut
+		- non-transitive: Nur die Child Domain wird vertraut
+	- Trust koennen one-way oder two-way sein:
+		- Bidirectional: User von beiden Seiten koennen auf die Ressource zugreifen
+		- One-Way: Nur die User in der trusted Domain koennen Ressourcen in der Trusted Domain zugreifen
+
+###################################################################################################
+Active Directory Protocols
+1. Kerberos, DNS, LDAP, MSRPC
+	- Active Directory erfordert manche Protokolle wie Lightweight Directory Access Protocol(LDAP), Kerberos, DNS fuer authentifikation und Kommunikation und MSRPC was Microsofts Version von Remote Procedure Call(RPC) ist eine interprozess Kommunikation
+- Kerberos:
+	- Kerberos ist das standard authentifizierungs Protokoll fuer Domainen
+	- Ist ein offener Standard und erlaubt Kompatibilitaet mit anderen System die den gleichen Standard benutzten
+	- Wenn ein User sich an einem PC anmeldet, wird Kerberos benutzt um den User zu authentifizieren
+	- Kerberos ist basiert auf einem Ticket system
+	- Als Teil von Active Directory Domain Services(AD DS), Domain Controller haben ein Kerberos Key Distribution Center(KDC) dieser stellt das Ticket aus
+
+	- Wenn ein User sich in das System einloggt, schickt der User ein mit dem Passwort verschlueeseltes Ticket an das KDC. Das KDC kann das Ticket(AS-REQ) mit dem Passwort entschluesseln, das erstellt ein Ticket Granting Ticket(TGT) und schickt es zum User. Der User presentiert dann das TGT einem Domain Controller um einen Ticket Granting Service(TGS) Ticket verschluesselt mit einem zugehoerigen NTLM-Password Hash zu verschluesseln anzufordern. Zuletzt representiert der Client das TGS vor einer Anwendung um sich bei dieser zu authentifizieren.
+
+	- Kerberos entkoppelt die User credentials von Anfragen an verbrauchbare Ressourcen
+	- Das KDS speichert keine vorherigen Transaktionen
+	- Das TGS ist auf ein gueltiges TGT angewiesen 
+	- Kerberos benutzt Port 88
+
+- DNS:
+	- Active Directory Domain Services (AD DS) benutzt DNS damit Clienten die Domain Controller finden koennen und damit die Domain Controller untereinandere kommunizeren koennen
+	- DNS wird verwendet um Hostnamen in IP-Adresse aufzuloesen
+	- AD pflegt eine Datenbank mit laufenden Services in Form von Service Record(SRV)
+	- Diese SRV erlaubten Clients in der AD Umgebung einen Service zu lokalisieren
+
+	- Wenn ein Client dem Netzwerk beitritt, sendet der Client eine Anfrage zum DNS Service, der DNS Server ruft den SRV Eintrag nach dem Domain Contoller ab und schickt ihn an den Client. 
+
+- LDAP:
+	- Active Directory unterstuezt Lightweight Diretory Access Protocol(LDAP) fuer Verzeichnisabfragen
+	- LDAP ist ein open source und plattformuebergreifendes Protokoll, dass fuer die Authentifizierung bei verschiedenen Verzeichnisdiensten verwendet wird z.B. AD
+	- LDAP benutzt 389, und LDAP ueber SSL (LDAPS) kommuniziert ueber den Port 636
+	- LDAP ist die Sprache mit der Systeme in der gleichen Umgebung mit AD kommunizieren koennen
+	- Eine LDAP-Sitzung beginnt damit, dass zunaechst eine Verbindung zu einem LDAP-Server(Directory System Agent) hergestellt wird
+	- Der Domain Controller in AD hoert aktiv nach LDAP Anfragen, wie Sicherheits authentifizierungsanfragen
+
+	- AD LDAP Authentication:
+		- LDAP ist für die Authentifizierung von Anmeldeinformationen gegenüber AD eingerichtet und verwendet eine "BIND"-Operation, um den Authentifizierungsstatus für eine LDAP-Sitzung festzulegen.
+		- Es gibt 2 Arten von LDAP-Authentifizierung:
+			- Simple Authentication:
+				- Username und Passwort erzeugen eine BIND Anfrage um sich am LDAP Server zu authentifizieren
+			- SASL Authentication:
+				- Der LDAP Server benutzt das LDAP Protokoll um eine LDAP Nachricht zum authorization service zu senden, dieses initiert eine Reihe von challenge/response Nachricht die sich entweder erfoglreich oder erfolglos herausstellt
+	- LDAP Authentication messages werden im klartext verschickt deswegen ist es sinnvoll diese mit TLS zu verschluesseln
+
+- MSRPC:
+	- MSRPC ist Microsofts Implementierung von Remote Procedure Call(RPC), ein interprozess Kommunikation Technik
+	- Windows benutzt MSRPC um auf Active Directory durch 4 RPC Interface zugreifen
+		- lsarpc
+		- netlogon
+		- samr
+		- drsuapi
+
+2. NTLM Authentication 
+- Ausser Kerberos und LDAP, benutzt Active Directory auch andere authentifizierungs methoden
+- Dazu gehoeren, LM, NTLM, NTLMv1 und NTLMv2
+- LM und NTLM sind die Hashnamen 
+- NTLMv1 und NTLMv2 sind authentifizierungs Protokolle die LM und NT hash benutzten
+
+	Lan Manager(LN):
+	- LN Hashes ist der aelteste Mechanismus zum speichern von Password der von Windows benutzt wird
+	- Wenn benutzt werden die Hashes in einer Security Accounts Manager(SAM) Datenbank auf einem Windows Host und in einem NTDS.DIT Datenbanmk auf einem Domain Controller gespeichert
+	- Passwoerter koennen unter LM nur maximal 14 Zeichen lang sein
+	- Passwoerter sind nicht case sensitive, und sind auf 69 Zeichen beschraenkt
+	- Was fuer Tools wie Hashcat einfach zu knacken ist
+	- Die 14 Zeichen werden vor dem hashen nocheinmal geteilt
+	- Zwei DES Keys werden fuer jedes Teil erstellt diese werden dann mit "KGS!@#$%" verschluesselt
+	- Diese beiden Teile werden dann verkettet was zu einem LM-Hash fuehrt
+	- Damit muss nur einer dieser beiden Teile jeweils mit Hashcat geknackt werden
+
+	NTHash(NTLM):
+	- NT Lan Manager(NTLM) werden in moderneren Windows System genutzt
+	- Es ist ein challenge response authentifizierungs protokoll und benutzt 3 Nachrichten zur Authentifizierung
+	- Die Hashes werden lokal in einer SAM Datenbank oder einer NTSD.DIT Datenbank auf einem Domain Controller gespeichert
+	- Das Protokoll hat 2 gespeicherte Hash Passwords zum waehlen fuer die Authentifizierung
+
+	NTLM Authentification Request:
+		- Koennen immernoch auch wenn sie staerker als LM Hashes sind mit Hachcat geknackt werden
+		- GPUs koennen ein NTLM mit 8 Zeichen in unter als 3 Stunden brechen
+		- NTLM ist ausserdem anfaellig fuer passh-the-hash-attack, was heisst das ein Angreifer ein NTLM Hash zum authentifizieren am Zielssystem
+		- Pass-the-Hash:
+			- Angreifer sendet Authentifizierungs Anfrage
+			- Server sendet Authentifizierungs Challenge
+			- Angreifer sendet Usernamen und gestolenen Password Hash
+			- Server verifiziert den Hash Value und erteilt Rechte
+
+	NTLMv1(Net-NTMLv1):
+		- Fuehrt einen Challenge/Response zwischen einem Server und einem Client mit einem NT Hash aus
+		- NTLMv1 benutzt NT und LM Hash, was es einfacher macht einen Hash zu cracken, Tools dafuer sind Responcer und NTLM relay attack
+		- Der NTLMv1 Hash wird vom challenge/response Algorithmus erstellt
+		- Der Server sendet dem Client ein 8 Byte lange Nummer(challenge) der Client sendet einen Antwort mit 24 Bytes zurueck
+		- Die Hashes koennen nicht fuer pass-the-hash benutzt werden
+
+	NTLMv2(Net-NTMLv2):
+		- Ist eine staerkere Alternative zu NTLMv1
+		- Es ist gegen Spoofing Angriffe abgesichert
+		- NTLMv2 sendet 2 Antworten zu der 8-Byte Anfrage dem Server zu
+		- Die Antwort enthaellt einen 16 Byte HMAC-MD5 Hash von der challenge, eine zufaellig generierte challenge vom Client und ein HMAC-MD5 Hash von den User Credentials
+		- Die zweite Antwort die gesendet wird, benutzt eine variable-length inklusive der aktullen Zeit, einen zufaelligen 8 Byte Wert und den Domain namen
+
+	Domain Caches Credentials(MSCache2):
+		- In einer AD Umgebung, erfordern die meisten eine Kommunikation mit den Brain von dem AD Netzwerk dem Domain Controller
+		- Microsoft hat den MS Cache v1 und v2 Algorithmus (auch als Domain Caches Credentials(DCC)) der auch funktioniert wenn keine Kommuikation mit dem Domain Controller moeglich ist
+		- Hosts speichern die letzten 10 Hashes von fuer jede Domain User welche erfolgreich einen Registry Key in die HKEY_LOCAL_MACHINE\SECURITY\Cache eingetragen haben
+		- Die Hashes koennen nicht fuer ein pass-the-hash Angriff genutzt werden
+		- Die Hashes koennen nicht durch Hashcat geknackt werden
+		- Diese Hashes koennen von einen Angreifer erlangt werden, nachdem dieser einen Adminstrator Zugang zu einem Host verschafft hat
+
+###################################################################################################
+All About Users
+1. User and Machine Accounts
+- User Accounts werden in einem lokalen System oder in einem Active Directory erstellt
+- Wenn ein User sich in das System einloggt wird ein Access Token erstellt
+- Der Token beschreibt die Users Security Identity und Gruppenzugehoerigkeit
+- Wenn immer ein User mit einem Process interagiert wird dieser Token presentiert
+- User koennen Gruppen zugewiesen werden diese koennen ein oder mehrere Mitglieder haben
+- Gruppen koennen Zugriff auf Ressourcen erteilt werden, damit ist die Verwaltung deutlich einfacher
+
+- In der Regel hat jedes Unternehmen, mindestens ein AD-Benutzerkonto pro Benutzer eingerichtet
+- Oft werden bestimmte Konten nur dafuer genutzt um eine bestimmte Anwendung im Hintergrund auszufuehren
+- Es kann vorkommen, dass deaktivierte Konten nicht geloescht werden koenenn, da Aufzeichnungen zu Pruefungszwecken aufbewahrt werden muessen
+
+- User koennen in AD mit vielen Rechten ausgestattet werden
+- Zwischen Read-Only Users bis zu Enterprise Admin(vollstaendigen Kontrolle auf alle Objekte) und Kombinationen dazwischen
+- Da Rechte leicht falsch vergeben werden koennen sind User ein interessantes Ziel fuer Angreifer
+
+- Local Accounts:
+	- Lokale Accounts werden auf einem Server oder Workstation gespeichert
+	- Die Rechte koennen entweder einzeln oder ueber eine Gruppe zugewiesen werden
+	- Die Rechte koennen nur fuer den speziellen Host gewaehrt werden und gelten nicht fuer die gesamte Domaine
+	- Lokale User Konten gelten als Security Principals kann aber nur die eigenen Ressourcen verwalten
+	- Es gibt mehrere standardmaeesige lokale User Konten auf einen Windows System:
+		- Administrator: Dieser Account hat die SID "S-1-5-domain-500" und wird als erstes Konto auf einem neuen Windows System erstellt. Es hat vollstaendige Kontroller ueber alle Ressourcen. Kann nicht geloscht/deaktiviert/umbeannt werden. Windows 10 und Server 2016 Hosts deaktivieren das Administrator Konto und erstellen ein anderes lokalen Konto und fuegt es der lokalen Admin Gruppe hinzu  
+		- Guest: Ist im Standardfall deaktiviert. Zweck von diesem Konto ist Users zu erlauben Zugriff zu einem Computer zu erlangen mit limierten Rechte.
+		- SYSTEM: Ist der Standardkonto auf einem Windows System um viele interne Funktionen auszufuehren. Viele der Prozesse und Dienste, die auf dem Host laufen werden unter dem SYSTEM-Kontext ausgefuehrt. Hat Berechtigung fuer fast alles. Kann nicht zu Gruppen hinzugefuegt werden. Ist die hoechste Berechtigungsstufe auf einem Windows Host und hat standardmaeesig Vollzugriffsreche auf alle Dateien im Windows System.
+		- Network Service: Ist ein vordefiniertes Konto wird vom Service Control Manager(SCM) fuer die Ausfuehrung von Windows-Diensten verwendet. Wenn ein Dienst mit diesem Konto ausgefuehrt ist, gibt er Anmeldeinformationen an Remote-Dienste weiter.
+		- Local Service: Ein weiteres vordefiniertes lokales Konto wird von SCM fuer die Ausfuehrung von Windows-Diensten verwendet. Es ist mit minimalen Rechte auf dem Computer konfiguriert und presentiert anonyme Anmeldeinformationen zum Netzwerk
+
+- Domain Users
+	- Domain User unterscheidt sich vom lokalen User dadurch, dass sie Zugriff auf Domain Ressourcen wie Dateiserver, Drucker usw haben.
+	- Domain User koennen sich bei jedem Host in der Domaine anmelden
+	- Ein wichtiges Konto ist das KRBTGT-Konto, dies ist eine Art lokales Konto, das in der AD Infrastruktur integriert ist. Fungiert als Service Account fuer den Schluesselaustausch und ermoeglicht den Zugriff auf die Domain Ressourcen. Ist ein hauefiges Ziel fuer Angreifer, da Zugriff auf den User uneingeschraenkten Zugriff auf eine Domaine ermoeglicht. Es kann durch Angriffe wie Golden Ticket Angriffe zu Privilig escalation kommen.
+
+- User Naming Attributes:
+	- Die Sicherheit kann durch verschiedene User Attribute verbessert werden, die helfen Benutzerobjekte wie Anmeldenamen oder ID zu identifizieren
+ 	- UserPrincipalName(UPN): Ist der primaere Loginname. Meistens wir die Email dafuer benutzt
+ 	- ObjectGUID: Ist ein eizigartiger Kennung des Users. In AD das ObjectGUID Attribut aendert sich auch bei der Loeschung des Kontos nie
+ 	- SAMAccountName: Ist der Loginname der die vorherigen Version von Windows unterstuezt
+ 	- objectSID(SID): Identifiziert einen User und die Gruppenmitgliedschaft waehrend der Sicherheitsinteraktionen mit dem Server
+ 	- sIDHistory: Enthaelt den vorherigen SIDs vom User Objekt wenn ein Objekt von einer zur anderen Domaine verschoben wird
+
+- Domain-joined vs. Non-Domain-joined Machines:
+	- Domain joined:
+		- Host die einer Domaine angeschlossen sind koenen Informationen uebr innerhalb eines Unternehmens leicher austauschen. 
+		- Ein User kann sich von jedem Computer der mit der Domaine verbunden ist anmelden
+
+	- Non-domain joined:
+		- Ein User existiert nur auf einem Computer
+		- Die gemeinsame Nutzung von Ressourcen ausserhalb des lokalen Netzwerks ist viel komplizierter
+		- Eignet sich gut fuer den Heimgebrauch oder fuer kleinere Firmen
+		- Die Einrichtung von Usern ist viel einfacher
+
+2. Active Directory Groups
+- Nach Usern sind Groups eine wichtiges Objekt in Active Directory
+- Groups koennen User zusammenfassen und Rachte und Zugriffe verwalten
+- Es gibt viele vordefinierte Gruppen
+- Organizational Unit(OUs) werden benutzt um User, Computer und Gruppen zu verwalten, OUs sind nicht mit Gruppen vergleichbar
+- OUs koennen auch verwendet um administrative Aufgaben an einen Benutzer zu delegieren z.B. das resten von Passwords
+
+- Types of Groups:
+	- Gruppen werden verwendet um Benutzer, Computer und Conatact Objects in Verwaltungseinheiten einzuteilen, um die Zuweisung von Ressourcen wie Druckern und Dateifreigaben zu erleichtern
+	- Gruppen haben zwei grundlegende Eigenschaften: Typ und Scope
+	- Der Gruppentyp definiert den Zweck der Gruppe
+	- Der Scope definiert wie die Gruppe innerhalb der Domaine des Forests benutzt werden kann
+	- Es gibt 2 Typen security und distribution Gruppen
+
+	Group Type And Scope:
+	- Secrity Groups:
+		- Dient in erster Linie dazu, Rechte an eine Gruppe zu vergeben
+		- Erleichert die Vergabe von Rechten und reduziert den Overhead bei der Zuweisung von Berechtigungen von Rechten zu Ressourcen
+
+	- Distribution Groups:
+		- Wird von E-Mail Anwendungen verwendet um Nachrichten an Gruppenmitglieder zu verteilen
+		- Funktionieren aehnlich wie Mailinglisten
+
+- Group Scopes:
+	- Es gibt 3 verschiedene Group Scopes die zu Gruppen angewiesen werden
+	- Domain Local Group:
+		- Lokale Gruppen koennen nicht in anderen Domains verwendet werden
+		- Koennen nur in der Domaine verwendet werden, in der sie erstellt wurde
+		- Lokale Gruppen koennen andere Lokale Gruppen enthalten
+		- Lokale Gruppen koennen nicht in globalen Gruppen hinzugefuegt werden
+
+	- Global Group:
+		- Werden verwendet um Zugriff auf Ressourcen in einer anderen Domaine zu gewaehren
+		- Eine globale Gruppe kann nur Accounts aus der Domaine erhaltenm, in der sie erstellt wurde
+		- Koennen zu lokalen und globalen Gruppen hinzugefuegt werden
+
+	- Universal Group:
+		- Werden verwendet wenn Ressourcen ueber mehrere Domains verwaltet werden muessen
+		- Sie sind fuer alle Domainen innerhalb eines Forest verfuegbar
+		- Werden in einem Global Catalog(GC) gespeichert 
+		- Hinzufuegen und Loeschen von Objekten loest eine Forest wide Replication aus
+		- Die Replication wird nur auf der einzelnen Domaine ausgeloest wenn ein User geloescht wird
+		- Wenn einzelne Benutzer oder Computer verwaltet werden, wrd bei jeder Aenderung eine Forest wide Replication ausgeloest
+
+- Built-in vs. Custom Groups:
+	- Bei der Erstellung einer Domaine werden mehrere integrierte Security Groups mit dem Geltungsbereich einer lokalen Domaine erstellt
+	- Built-in Gruppen lassen keine Gruppenverschachtlung zu
+
+- Nested Group Membership:
+	- Eine lokale Gruppe kann in einer anderen lokalen Gruppe enthalten sein
+	- Durch diese Mitgliedschaft kann ein User Priviligien erben, die nicht direkt seinem Konto oder, der Gruppe in der er direkt Mitglied ist, zugewiesen werden
+	- Dies kann dazu fuehren, dass einem User unbebsichtigte Priviligien gewaehrt werden koennen
+	- Tools wie BloodHound sind sehr nuetzlich im Priviligien aufzudecken
+
+- Importing Group Attributes:
+	- Gruppen haben ebenso wie User auch Attribute. Hier sind wichtige Gruppen Attribute:
+		- cn: Common-Name ist der Name der Gruppe
+		- member: Zeigt die Mitglieder der Gruppe an
+		- groupType: Spezifiziert Gruppentyp und Scope
+		- memberOf: Listet von Gruppen indenen die Gruppe Mitglied ist
+		- objectSid: Ist der Security Identifier 
+
+3. Active Directory Rights and Priviliges
+- Rechte(Rights) und Berechtigungen(Privileges) sind Eckpfeiler der AD-Verwaltung und koennen bei falscher Verwaltung leicht ausgenutzt werden
+- Rights werden Usern oder Groups zugewiesen und beziehen sich auf die Berechtigungen zum Zugriff auf Objekte
+- Privileges werden Usern oder Groups zugewiesen und beziehen sich auf das ausfuehren von Aktionen
+
+- Built-in AD Groups:
+	- AD enthaelt viele built-in Security Groups von denen einige ihren Mitgliedern Rechte und Privilegien gewaehren
+	- Die Mitgliedschaft von diesen Gruppen sollte streng verwaltet werden
+	- Folgende build-in Groups tauchen haeufig auf:
+		- Account Operators: Mitglieder koennen die meisten Arten von Konten erstellen und aendern
+		- Administrators: Mitglieder dieser Gruppe haben ungehinderten Zugang zu einem Computer oder einer gesamten Domaine
+		- Backup Operator: Mitglieder koennen backups erstellen und wiederherstellen von allen Dateien trotz aller Rechte
+		- DnsAdmins: Mitglieder haben Zugriff auf die Netzwerk DNS Informationen
+		- Domain Admins: Mitglieder haben vollen Zugriff auf die Domaine und ihre Mitglieder
+		- Domain Computer: Mitglieder sind alle Computer in einer Domaine
+		- Domain Controller: Enthaelt alle DCs innerhalb einer Domaine
+		- Domain User: Enthaelt alle User innnerhalb einer Doamine
+		- usw.
+
+	- User Rights Assignment:
+		- Je nach Gruppenzugehoerigkeit koennen Usern verschiedene Rechte zugewiesen werden
+		- Noch weitere Informationen https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/user-rights-assignment
+
+	- Viewing a Users Privileges:
+		- Mit dem Befehl whoami /priv wird eine List mit allen Privilegien ausgegeben
+	
+	- Dmain Admin Rights Non-Elevated:
+		- Wenn der gleiche Befehl in einer PowerShell Konsole eingegeben wird
+		- Hiermit koennen alle zur Verfuegung stehenden Rechte ausgegeben werden 
+
+###################################################################################################
+Digging in Deeper
+1. Security in Active Directory
+- Bei einer Standardinstallation von Active Directory fehlen viele Haerungsmassnahmen, Einstellungen und Tools die zur Sicherung fuer AD verwendet werden kann
+- Es muss immer ein Gleichgewicht zwischen 3 Teilen geben: Verfuebarkeit, Integritaet, Vertaulichkeit
+
+- CIA Triad:
+	- Wir koennen dazu beitragen die Waage auszugleichen, indem wie die Funktionen die von Windows bereitgestellt werden nutzen
+	- In einem Unternehmen muessen noch viele andere Sicherheitsprinzipien vorhanden sein die Defense-in-Depth gewaehrleisten koennen
+
+- General Active Directory Hardening Measures:
+	- Microsofts Local Administrator Passwort Solution(LAPS) wird benutzt um lokale Admin Passwoerter auf Windows-Hosts nach Zufallsprinzip zu generieren und zu rotieren
+
+	- LAPS:
+		- Konten koennen so eingerichtet sein, dass ihr Passwort in einem festen Intervall rotier(12h, 24h, usw).
+		- Kann dazu beitragen, die Auswirkungen von einem einzelnen gefaehrdeten Host zu verringern
+
+	- Audit Policy Settings(Logging and Monitoring):
+		- Jede Organisation muss eine Protokollierung und Ueberwachung einrichten, um unerwartete Aenderungen oder Aktivitaeten zu erkennen und darauf zu reagieren
+
+	- Group Policy Security Settings:
+		- Group Policy Objets(GPOs) sind virtuelle Sammlungen von Policy Settings die auf User, Groups und Computer angewendet werden koennen
+		- Die Security Policys koennen verwendet werden um Systeme zu haerten
+		- Account Policies: Verwaltet wie User mit der Domaine interagieren. Wie Passwort Policys, Account Lockout Policys und Kerberos Settings
+		- Local Policies: Diese beziehen sich auf einen bestimmten Computer und umfassen event audit policys, user priviliges on a host, usw
+		- Software Restriction Policies: Kontrolliert welche Software auf einem Host laufen darf
+		- Application Control Policies: Einstellung um zu kontrollieren welche Anwendungen von welchem User/Group ausgefuehrt werden darf. Admins verwenden AppLocker um den Zugang zu verschiedenen Anwendungen einzustraenken. Oft wird der Zugriff auf CMD und PowerShell komplett untersagt. 
+		- Advanced Audit Policy Configuration: Eine Vielfalt an Einstellungen die angepasst werden kann um verschiedene Aktivitaeten zu pruefen.
+
+	- Update Management(SCCM/WSUS):
+		- Eine Patch-Verwaltung die von Windows Active Directory einzusetzen ist
+		- Windows Server Update Service(WSUS) kann als Pach-Verwaltungs Programm verwendet werden
+		- System Center Configuration Manager(SCCM) ist die konstenpflichtige Version von WSUS und stellt sicher, dass keine Hosts wichtige Sicherheitspathces verpassen
+
+	- Group Managed Service Accounts(gMSA):
+		- gMSA ist eine von der Domaine verwaltetes Konto, dass ein hoeheres Mass an Sicherheit als andere Konten bietet
+		- Bieten eine automatische Kenntwortverwaltung mit einem 120 Zeichen langen Passwort, das vom Domaincontroller generiert wird
+		- Das Passwort wird in festen Abstaenden gewechselt
+
+	- Security Groups:
+		- Security Groups bieten die Moeglichkeit, den Zugriff auf Netzwerkressourcen zuzuweisen
+		- Koennen verwendet werden, der Gruppe bestimmte Rechte zuzuweisen
+		- Koennen auch Zugriffsrechte auf Ressourcen verwalten
+
+	- Account Seperation:
+		- Admins muessen 2 getrennte Accounts haben einen fuer die normale Arbeit und einen fuer die Verwaltungsaufgaben
+		- Die Passwoerter muessen fuer beide Accounts unterschiedlich sein
+
+	- Password Complexity Policies + Passphrases + 2FA:
+		- Idealerweise sollte ein Unternehmen ein Passwort-Manager verwenden
+		- Passwoerter sollten mindestens Grossbuchstaben, Kleinbuchstaben, Zahlen und Sonderzeichen enthalten mit einer Laenger die groesser als 10 lang ist
+		- Eine weitere Sicherheitsmassnahme ist die Implementierung einer Multi-Faktor-Authentifizierung (MFA)
+	
+	- Limiting Domain Admin Account Usage:
+		- Allmaechtige Domain Admin Konten sollten nur die Anmeldung bei Domain Contoller verwendet werden nicht fuer persoenliche Workstations
+	
+	- Peridically Audting and Removing Stale Users and Objects: 
+		- Es ist wichtig alle nicht verwendeten Konten zu entfernen oder zu deaktivieren
+
+	- Auditing Permissions and Access: 
+		- Regelmaessig sollten Audits der Zugriffskontrollen durchfuehren um sicherzustellen, dass die User nur die taegliche Arbeit erforderliche Zugriffsrecher haben
+
+	- Audit Policies & Logging:
+		- Die Sichtbarkeit ist der Domaine ist ein Muss
+		- Eine Organisation kann dies durch eine robuste Protkollierung und anschliessende Verwendung von Regeln zur Erkennung anomaler Aktivitaeten erreichen
+
+	- Using Restricted Groups:
+		- Restricted Groups ermoeglichen Admins, die Gruppenmitgliedschaft ueber Group Policy zu konfigurieren
+		- Gruppen koennen als Beispiel nur auf Admins beschraenkt werden
+
+	- Limiting Server Roles:
+		- Es ist wichtig keine zusaetzliche Rollen auf sensiblen Host zu installieren
+		- Jede zusaetzliche Rolle wuerde die Angrissflaeche vergroessern
+
+	- Liminting Local Admin and RDP Rights:
+		- Unternehmen sollen genau kontrollieren, welche User lokale Adminrechte auf welche Computer haben, dies kann durch Restricted Groups erreicht werden
+		- Dies wuerde es einem Angreifer, der ein beliebiges Konto kompromittiert, ermoeglichen, als lokale Admin auf diesem Host zuzugreifen und sensible Daten von diesem zu erhalten
+
+2. Examining Group Policy:
+- Group Policy ist ein Windows Feature fuer Verwaltung
+- Jeder Windows-Host verfuegt ueber einen Editor fuer lokale Group Policys
+- Group Policy ist ein starkes Tool zur Verwaltung und Konfiguration von Usereinstellungen, Betriebssysteme und Anwendungen
+- Group Policy ist ein wirkungsvolles Tool fuer die Verwaltung der Sicherheit in einer Domaine
+
+- Group Policy Objects(GPOs):
+	- ein GPO ist eine virtuelle Sammlung von Policysettings, die auf User oder Computer angewendet werden koennen
+	- Zu GPOs gehoeren Richtlinien wie Zeitueberschreitun fuer die Bildschirmsperrre, Deaktivierung von USB-Anschluesseln, Richtlinie fuer Kennwoerter
+	- Jedes GPO hat einen eindeutigen Namen und ist mit einer eindeutigen Kenung (GUID) versehen
+	- GPOs koennen mit einer bestimmten OU, Domaine, oder Site verknuepft werden
+	- Ein einzelnes GPO kann auf mehreren Container angewandt werden, und ein Container kann mehrere GPOs haben
+	- Sie koennen auf einzelne User, Host oder Gruppen angewandt werden
+
+- RDP GPO Settings:
+	- GPO Einstellungen werden in der Order of Precendece angewandt:
+	
+	- Order of Precedence:
+		- Local Group Policy: Die Richtlinie wird direkt auf dem Host definiert. Jede Einstellung wird hier von einer hoeheren Ebene ueberschrieben
+		- Site Policy: Alle Richtilinien die sich fuer den Unternehmensstadort gelten. Richtlinien zur Zugriffskontrolle in einem Standort sind ein gutes Beispiel. Eine gute Moeglichkeit um Drucker- und Freigabrzuorderungen fuer User durchzufuehren
+		- Domain-wide Policy: Alle Einstellungen die fuer die gesamte Domaine gelten sollen. Beispiele dafuer sind Komplexitaetsstufe der Kenntwortrichtlinie
+		- Organizational Unit(OU): Betreffen User und Computer, die zu einer OUs gehoeren. Hier sollten alle rollenspezifischen Einstellungen stehen. Beispiele wie Zuordnung von bestimmten Laufwerken. 
+		- Any OU Policies nested within other OUs: Einstellungen auf dieser Ebene bettreffen nur spezifische Objekte. So koennen beispielsweise Sicherheitsanalysen einen speziellen Satz von GPO Settings haben
+
+	- Group Policys koennen ueber die Group Policy Management Console oder in Powershell ueber das GroupPolicy Module verwaltet werden
+	- Die Standardomainerichtlinie ist das Standard-GPO, diese hat vor allen GPOs den hoechsten Vorrang und wird standardmaessig von allen User und Computer angewendet
+
+	- GPO Order of Precedence:
+		- GPOs werden von oben nach unten verarbeitet. Ein GPO, das mit einer OU auf der hoechsten Ebene in einem AD Netzwerk verkuepft ist wird zuerst verarbeitet
+		- Hierbei ist zu beachten, dass Vorrangigkeit zu beachten, dies kann leicht von einem Angreifer ausgenutzt werden
+
+	- Group Policy Refresh Frequency:
+		- Wenn eine Group Policy erstellt wird, werden die Einstellungen nicht automatisch uebernommen, Windows fuehrt standardmaessig alle 90 Minuten +- 30 Minuten einen Aktualisierung durch
+		- Der Domaincontroller fuehrt die Aktualisierung durch der zusaetzliche Versatz sorgt dafuer, dass der Domaincontroller nicht ueberfordert wird
+		- Der Befehl gpupdate /force fuehrt den Aktualisierungsprozess manuell aus
+		- Der Aktualisierungsintervall kann ueber die Group Policy geandert weren
+
+- Security Considerations of GPOs:
+	- GPOs koennen benutzt werden um Angriffe durchzufuehren
+	- Ein Angreifer kann Rechte einem Account den der Angreifer kontrolliert hinzufuegen
+	- Die Angriffe erfolgen dann wenn ein User die Rechte hat ein GPO zu aendern
+
+###################################################################################################
+Getting Our Hands Dirty
+1. AD Administration: Guided Lab Part 1
+- https://learn.microsoft.com/en-us/powershell/module/grouppolicy/?view=windowsserver2022-ps
+- Task1:
+	- Add User:
+		- Andromeda Cepheus: <New-ADUser -Name "Andromeda Cepheus" -DisplayName "Andromeda Cepheus" -EmailAddress "a.cepheus@inlanefreight.local" -ChangePasswordAtLogon 1>
+	
+		- Orion Starchaser: <New-ADUser -Name "Orion Starchaser" -DisplayName "Orion Starchaser" -EmailAddress "o.starchaser@inlanefreight.local" -ChangePasswordAtLogon 1>
+
+		- Artemis Callisto: <New-ADUser -Name "Artemis Callisto" -DisplayName "Artemis Callisto" -EmailAddress "a.callisto@inlanefreight.local" -ChangePasswordAtLogon 1> 
+
+		Musterloesung:
+		<New-ADUser -Name "Orion Starchaser" -Accountpassword (ConvertTo-SecureString -AsPlainText (Read-Host "Enter a secure password") -Force ) -Enabled $true -OtherAttributes @{'title'="Analyst";'mail'="o.starchaser@inlanefreight.local"}>
+		Get-ADUser -Filter 'Name -like "*Orion*"'
+	
+	- Remove User:
+		- Mike O'Hare: <Remove-ADUser -Identity mohare>
+		- Paul Valencia: <Remove-ADUser -Identity pvalencia>
+
+	- Unlock User and change at next Logon: 
+		- Adam Masters: <Unlock-ADAccount -Identity amasters> 
+		<Set-ADAccountPassword -Identity 'amasters' -Reset -NewPassword (ConvertTo-SecureString -AsPlainText "NewP@ssw0rdReset!" -Force)>
+		<Set-ADUser -Identity amasters -ChangePasswordAtLogon 1>
+
+- Task2:
+	- Add Group Security Group Analysts and Nest int in an OU with the same name:
+		- New-ADOrganizationalUnit -Name "Analysts" -Path "OU=IT,OU=HQ-NYC,OU=Employees,OU=CORP,DC=INLANEFREIGHT,DC=LOCAL"
+
+		- New-ADGroup -Name "Analysts" -SamAccountName Analysts -GroupCategory Security -GroupScope Global -DisplayName "Analysts" -Path "OU=Security,OU=IT,OU=HQ-NYC,OU=Employees,OU=Corp,DC=INLANEFREIGHT,DC=LOCAL"
+
+	- Add new hires to the Group:
+		- Add-ADGroupMember -Identity analysts -Members Andromeda Cepheus,Orion Starchaser,Artemis Callisto
+
+- Task3:
+	- Duplicate the Group Policy Logon Banner Rename it to "Security Analysts Control":
+		- <Copy-GPO -SourceName "Logon Banner" -TargetName "Security Analysts Control">
+	- Modify it to work for the new Analysts OU
+		- <Set-GPLink -Name "Security Analysts Control" -Target "ou=Analysts,ou=IT,OU=HQ-NYC,OU=Employees,OU=Corp,dc=INLANEFREIGHT,dc=LOCAL" -LinkEnabled Yes>
+	- Modify Policy Object:
+		- Group Policy Management Editor oeffnen und Rechte erlauben oder verbieten
+
+2. AD Administration: Guided Lab Part 2
+	- Task 4 Add and Remove Computers to the Domain:
+		
+		- Fuegt den Computer der einer hinzu:
+			- Domain= INLANEFREIGHT.LOCAL
+			- Domain Administrator account= htb-student_adm
+			- <Add-Computer -DomainName INLANEFREIGHT.LOCAL -Credential INLANEFREIGHT\HTB-student_adm -Restart>
+
+		- Fuegt einen Remote Computer einer Domain hinzu:
+			- Remote Computer= ACADEMY-IAD-W10
+			- <Add-Computer -ComputerName ACADEMY-IAD-W10 -LocalCredential ACADEMY-IAD-W10\image -DomainName INLANEFREIGHT.LOCAL -Credential INLANEFREIGHT\htb-student_adm -Restart>
+		
+		- Prueft ob ein Computer in einem OU Mitglied ist:
+			-<Get-ADComputer -Identity "ACADEMY-IAD-W10" -Properties * | select CN,CanonicalName,IPv4Address>
+
+
+
+
+Wichtige Modules:
+	- Active Directory LDAP
+		- https://academy.hackthebox.com/course/preview/active-directory-ldap
+	- Active Directory PowerView
+		- https://academy.hackthebox.com/course/preview/active-directory-powerview
+	- Active Directory BloodHound
+		- https://academy.hackthebox.com/course/preview/active-directory-bloodhound
+
+Boxes to Pwn:
+	- https://www.youtube.com/watch?v=jUc1J31DNdw&feature=youtu.be
+	- https://www.youtube.com/watch?v=8KJebvmd1Fk
+	- https://www.youtube.com/watch?v=H9FcE_FMZio
+	- https://www.youtube.com/watch?v=mr-fsVLoQGw
