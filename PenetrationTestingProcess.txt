@@ -1,0 +1,261 @@
+Penetration Testing Process
+Using Academy Effecyively:
+1. Introduction to the Penetration Tester Path
+	- "Information Security Foundations" Skill Path ist ein Wichtiges Modul
+	- Lateral Movement und Pillaging ist sind wichtige Skills fuer einen Pentester
+
+2. Academy Modules Layout
+	- Pre-Engagement:
+		- In der Pre-Engagement Stufe werden die Verpflichtungen, Aufgaben, Umfang, Beschraenkungen und verbunde Vereinbarungen in einer Dokumentation niedergeschrieben
+		- Vetragsdokumente werden zwischen dem Penetrationstester und dem Clienten unterschrieben
+		- Der nachfolgende Schritt ist Information Gathering
+	
+	- Information Gathering:
+		- Informations Beschaffung ist ein wichtiger Bestandteil jedes Penetrationstests
+		- Hier muessen wir Informationen ueber das System einholen wie Netzwerkinformationen und andere Komponenten dazu gehoeren Domain Namen oder Listen von In-Scope IP Adressen
+		- Nach dem Schritt ist der naechste Schritt Vulnerability Assesment
+
+	- Vulnerability Assessment:
+		- Hier wird das System nach Schwachstellen entweder mit automatisierten Tools oder manuell gescannt
+		- Die meisten Firmen fuehren standardmaessig ein Assesment Audit durch und checken ihre Infrastruktur nach bekannten Schwachstellen
+		- Hier muessen wir Outside of the Box denken um ein Weg in das System zu finden
+		- Von hier aus koennen 4 verschiedene Wege genommen werden:
+			- Exploitation: Der Schritt passiert wenn wir noch keinen Zugang zudem System/Webanwendung haben. Hierfuer brauchen wir eine oder mehrere Schwachstellen im System/Webanwendung
+			- Post-Exploitation: Hier pruefen wir ob eine privilege escalation moeglich ist. Die Vorraussetzung ist das der Zugang zum System schon besteht 
+			- Lateral Movement: Hier bewegen wir uns duch das System und sehen uns das System an. Das setzt den Zugang zum System vorraus
+			- Information Gathering: Das ist die letzte Option hier muessen wir uns noch mehr Informationen ran holen um uns noch ein besseres Bild vom System zu machen
+
+	- Exploitation:
+		- Exploitation ist ein Angriff auf das System oder Anwendung auf Basis einer potentiellen Schwachstelle
+		- Hier werden Informationen aus den Schritten Informationen Gathering und Vulnerability Assessment genutzt um den Angriff vorzubereiten
+		- Von hier aus koennen 4 verschiedene Wege genommen werden:
+			- Information Gathering: Wenn der Zugang zum System gewaehrt ist, koennen wir hier noch mehr Informationen zusammentragen
+			- Post-Exploitation: Hier fuehren wie meistens privilege escaltion aus damit wir noch mehr Rechte auf dem Ziel-Host haben
+			- Lateral Movement: Hier koennen wir wenn wir die Privilegien haben zwischen Hosts wechseln oder auf verbundene Netzwerke verbinden 
+			- Proof-of-Concept: Hier schreiben wir ein Proof-of-Concept und schreiben detailliert auf welche Pfade und Aktionen wir genutzt haben
+
+		- Web Exploitation:
+			- Web Exploitation ist der zweite Teil der Exploitation Stufe
+			- Web-Anwendungen bieten eine grosse Angriffsflaeche, da viele Firmen viele verschiedene Techniken einsetzten
+			- Web-Anwendungen sind meistens die am meistzugaenglichen Ziele waehrend eines externen Penetrationstests
+	
+	- Post-Exploitation:
+		- Meisten wenn wir Zugriff auf das System haben ist der Zugriff meistens kein mit den hoechsten Privilegien
+		- Die meisten Anwendungen sind isoliert konfiguriert damit ein Angreifer keine hohen Privilegien bekommt somit muessen wir die Einschraenkungen im naechsten Schritt umgehen
+		- Fuer Privilege Escalation muss ein tiefes Wissen uer Linux Privilege Escalation und Windows Privilege Escalation
+		- Von hier aus koennen 4 verschiedene Wege eingeschlagen:
+			- Information/ Gathering / Pillaging: Bevor wir mit der Privilege Escalation beginnen koennen muessen wir uns einen Ueberblick ueber das System verschaffen. Wir muessen wissen welche Benutzer und Optionen auf dem System verfuegbar sind. Dieser Schritt wird als Pillgaging bezeichnet. 
+			- Exploitation: Wenn wir sensible Informationen gefunden haben koenen koennen wir diese nutzen um weiter Exploits durchzufuehren
+			- Lateral Movement: Wir koennen uns auch mit anderewn Host und Netzwerken verbinden und diese durchleuchten
+			- Proof-of-Concept: Das Proof-of-Concept wird erstellt wenn wir die hoechste Stufe des internen Systems erreicht haben. Wenn wir Domain Admin Privilegien haben in Active Directory koennen wir hier noch weiter machen. Sonst schreiben wir Notizen ueber den Angriff ueber Details und Aktivitaeten und tragen es zusammen
+		- Die meisten Kunden wollen wissen wie weit ein Angreifer in ihrem Netzwerk kommt
+
+	- Lateral Movement:
+		- Hier bewegen wir uns durch das Netzwerk und 
+		- Von hier aus koennen 3 Wege eingeschlagen werden:
+			- Vulnerability Assesment: Wenn der Penetrationstest noch nicht fertig ist, springen wir wieder zum Schritt der Vulnerability Assessment. Hier werden die Informationen vom Pillaging benutzt
+			- Information Gathering/Pillaging: Hier sammeln wir Informationen ueber das System
+			- Proof-of-Concept: Wenn uns im Netzwerk nicht mehr umsehen koennen und nicht mehr weiterkommen koennen wir alle Schwachstellen und Wege zusammentragen
+
+	- Proof-of-Concept:
+		- Ist ein Beweis, dass die Schwachstelle existieren
+		- PoCs werden mit einer Dokumentation dem Administrator gesendet, damit dieser Schwachstellen beheben kann
+
+	- Post-Engagement:
+		- In dieser Phase raeumen wir das System auf
+		- Alle hochgeladenen Dateien installierten Shells usw sollen geloescht werden
+		- Alle Credentials und Systemaenderungen sollten der Firma mitgeteilt werden
+
+###################################################################################################
+Background & Preparation
+1. Penetration Testing Overview:
+- Ein Penetrationstest soll alle Schwachstellen in einem System entdecken und die Sicherheit erhoehen
+- Ein Read Team hat die Aufgabe die Schwachstellen zu nutzen wie auf die E-Mails des CEOs zuzugreifen
+
+- Risk Management:
+	- Das Hauptziel von einem IT-Securit Risk Management ist Risiken zu evaluieren, und potenzielle Risiken zu klassifizieren/bewerten
+	- Dazu gehoeren potenzielle Bedrohungen zu erkennen, Risiken zu evaluieren und die notwendigen Schritte zur Reduzierung dieser Risiken zu gehen
+	- Dies wird impkementiert durch eine Sicherheitskontrollen und Richtlinien, Zugangskontrollen, Verschlueselung, usw
+	- Es ist die Pflicht der in dem Penetetrationstest gefundenen Schwachsellen zu beheben
+	- Als ein Berater sollen wir Vorschlaege dem Unternehmen machen damit diese die Schwachstellen beheben koenne
+
+- Vulnerability Assessments:
+	- Ist ein generischer Term fuer Sicherheitsbewertung, Schwachstellen und Penetrationstest
+	- Schwachstellen- oder Sicherheitsbewertungen werden im Vergleich zu einem Penetrationstest mit automatisierten Tools durchgefuehrt
+	- Zu den Tools gehoeren Nessus, Qualsys, OpenVAS die Tools erfassen nicht alle Schwachstellen deswegen muss eine manuelle Bewertung vorgenommen werden
+	- Bei manchem Provider muss man vorher um Erlaubnis fragen, fuer AWS benoetigt man keine Erlaubnis
+
+2. Laws and Regulations:
+	- Jedes Land hat Gesetze die Computerrelevante Aktivitaeten regeln
+	- Es ist wichtig das einem diese Gesetze bekannt sind, damit sie beim Testen des Systems nicht gebrochen werden
+
+	- Europaeische Gesetze:
+		- Die General Data Protection Regulation(GDPR) reguliert den Umgang mit personenbezogenen Daten, staerkt das Recht auf personenbezogenen Daten. GDPR gilt fuer jedes Unternehmen, das personenbezogene Daten von EU-Buergern verarbeitet
+		- Das Network and Information Systems Directive(NISD) verpflichtet Betreiber Dienste geeignete Sicherheitmassnahmen zu implementieren. NISD gilt fuer eine Organisation und Einzelpersonen einschliesslich derjenigen die Penetrationstests durchfuehren
+		- Der Cybercrime Convention of the Council of Europe ist ein internationalen Vertrag ueber Straftaten die ueber das Internet begangen worden sind
+		- Die E-Privact Directive 2002/58/EC regelt die Verarbeitung von personenbezogenen Daten im Zusammenhang mit der Bereitstellung oeffentliche zugaenglicher Kommunikationsdienste in der EU
+
+3. Penetration Testing Process:
+- Prozesse sind in den meisten Wissenschaften ein Ablauf von Ereignissen, in der Informatik hingegen sind Prozesse ein Programm welches auf einem Betriebssystem laeuft
+- Ein Penetrationstest ist ein Step-by-Step Guide der sehr flexibel und anpassbar ist
+
+- Penetration Testing Stages:
+	- In jedem Penetrationtest gibt es mehrere Stufen die durchlaufen werden koennen
+	- Es gibt keine vorgegebene Schritte sondern nur Schritte die in verschiedenen Tests sinn ergeben wuerden
+	- Es gibt eine grobe Struktur mit 8 Stufen:
+		- Pre-Engagement: Es wird ein Vertrag zwischen dem Clienten und dem Tester geschlossenen indem alle notwendigen Tests beschlossen werden
+		- Information Gathering: Wir suchen Informationen ueber das Ziel, Informationen ueber Hardware und Software  
+		- Vulnerability Assessment: Wir analysieren die Informationen aus dem vorherigen Schritt um bekannte Schwachstellen im System oder in der Anwendung zu identifizieren
+		- Exploitation: In dieser Phase benutzen wir die Informationen aus dem Vulnerability Assessment Schritt und fuehren diesen Exploit aus
+		- Post-Exploitation: In diesem Schritt haben wir Zugang zum System um hoehere Rechte zu erlangen, meistens nur um dem Clienten die Schwere der Schwachstelle zu zeigen
+		- Lateral Movement: Dieser Schritt beschreibt die Bewebung durch das System zu anderen Netzwerken oder Clients. Fuer diesen Schritt muss Zugang zum System vorhanden sein
+		- Proof-of-Concept: Hier dokumentieren wir alle Schritte des Exploits um diese dem Clienten zu zeigen
+		- Post-Engagement: In diesem Schritt saeubern wir das Sytem von all unseren Aenderungen und stellen dem Auftraggeber eine Dokumentation aller Schwachstellen vor.  
+
+###################################################################################################
+Penetration Testing Phases - Assessment Specific Stages
+1. Pre-Engagement:
+- Ein Vertag wird vor dem Penetrationstest zwishen dem Auftraggeber und dem Tester aufgesetzt
+- In diesem Vertag sollte der Scope des Tests beschrieben werden
+- Bevor der Test beginnt muss ein Non-Disclosure Agreement(NDA) unterschrieben werden
+- Darunter zaehlen ein paar Dokumente:
+	- Non-Disclosure Agreement(NDA)
+	- Scoping Questionnaire
+	- Scoping Document
+	- Penetration Testing Proposal(Contract/Scope of Work(SoW))
+	- Ruels of Engagement(RoE)
+	- Contractors Agreement
+	- Reports
+
+2. Information Gathering:
+- Wir sammeln Informationen ueber das Unternehmen, die Mitarbeiter und wie diese organisiert sind
+- Diese Phase kann in 4 Schritte unterteilt werden:
+	- Open-Source Intelligence(OSINT):
+		- OSINT ist ein Prozess um oeffentliche Informationen ueber Zielunternehmen/Mitarbeiter herauszufinden
+		- Es ist moeglichh, dass hoch sensible Informationen wie Passwoerter, Hashes, Keys, TOken usw sehr schnell gefunden werden koennen
+		- Repositories auf Github sind meistens nicht gut gesichert und deshalb von aussen sichtbar
+
+	- Infrastructure Enumeration:
+		- Services wie DNS kann genutzt werden um um eine Map von dem Client Server und Hosts zu erstellen um zu wissen wie die Infrastruktur strukturiert ist. Dazu gehoert Servernamen, Mail-Server, Web-Server, Cloud Instanzen usw
+		- Daraus erstellen wir eine Liste von Ip-Adressen und vergleichen diese mit unserem Scope
+		- Ausserdem untersuchen wir die Sicherheitsmassnahmen der Firma wie Firewalls, Web Application Firewalls usw damit diese von uns umgangen werden koennen
+
+	- Service Enumeration:
+		- Hier identifizieren wir alle Services auf dem Host oder Server im Netzwerk
+		- Informationen ueber Services koennen Version, Namen usw sein
+
+	- Host Enumeration:
+		- Hier pruefen wir jeden Host in unserem Scope Dokument
+		- Hier koennen wir Informationen wie Betriebssystem, Services, Version usw erkennen
+		- Nach erfolgreicher Exploitation durchsuchen wir Files, lokale Services, Script, Anwendung, usw vom Host
+
+	- Pillaging:
+		- Nach dem Post-Exploitation Schritt werden lokale sensibele Daten auf einem Host gesammelt
+
+3. Vulnerability Assessment:
+- In diesem Schritt analysieren wie die Informationen aus dem vorherigen Schritt
+- Eine Analyse kann mehrer Typen haben: Descriptive, Diagnostic, Predictive, Prescriptive
+
+- Vulnerability Research and Analysis:
+	- Wir suchen nach bekannten Schwachstelen fuer Anwendungen durch Common Vulnerabilties and Exposures(CVE) 
+	- Die meisten Schwachstellen lassen sich per Google suchen
+	- Fuer bekannten Schwachstellen gibt es ein Proof-of-Concept(PoC) welcher verstanden weren muss damit der Admin manuelle Konfigurationen im System vornehmen kann falls die Software nicht geupdatet werden kann
+	- Wir muessen darauf achten alle Warnungen zu umgehen
+	- Wenn wir keine Schwachstelle im System finden muessen wir wieder zum vorherigen Schritt der Information Gathering gehen um noch mehr Informationen zu finden
+
+4. Exploitation:
+- Um eine Reverse Shell zu bekommen muss der PoC angepasst werden damit der Ziel Rechner eine idealerweise verschluesselte Verbindung zum Angreiferhost aufbaut
+
+- Prioritization of Possible Attacks:
+	- Die Schwachstellen muessen wir priorisieren nach 3 Eigenschaften:
+		- Probability of Success:
+			- Der CVSS ist ein Weg die Wahrscheinlichkeit zu ermitteln ein besserer Weg ist der NVD Calculator 
+		- Complexity:
+			- Stellt den Aufwand zum Nutzen eines Exploits einer Schwachstelle da
+		- Wahrscheinlichkeit von Schaden:
+			- Schaetzung wie viel Schaden der Exploit verursacht, da das Zielsystem nicht beschaedigt werden soll
+			- DoS Attacken sollten meistens unterlassen werden, es sei denn es wurde vom Clienten erlaubt
+
+- Preparation for the Attack:
+	- Wenn keine bekannte Schwachstelle vorhanden ist, koennen wir den Host lokal rekonstruieren und den exploit auf die Umgebung anpassen 
+	- Im Zweifelsfall sollte der Kunde davor kontaktiert werden ob der Exploit vorgenommen werden soll
+
+5. Post-Exploitation:
+- Wenn der Exploitation Schritt erfolgreich war, muss in dem Post-Exploitation Schritt keine Ausweichung stattfinden
+- Hier wollen wir die hoehste Sicherheitsstufe erreichen damit wir an die sensibelsten Daten kommen
+
+- Evasive Testing:
+	- Manche Befehle wie net user oder whoami werden meistens vom Administrator ueberwacht und geflaggt
+
+- Information Gathering:
+	- Von hier aus koennen wir neue Informationen ueber das System gewinnen
+	- Mit den neuen Informationen koennen wir alle Schritte von davor wiederholen
+	- Vom inneren des Systems haben wir eine vielzahl von Informationen vom System
+	- Das durchsuchen von lokalen Netzwerken und Netzwerkkomponenten wird Pillaging genannt 
+
+- Pillaging:
+	- Hier ueberpruefen wir das Netzwerk auf Rollen von Hosts im Netzwerk
+	- Wie Analysieren das Netzwerk mit Interfaces, Shares, Routing, Services usw
+	- Die Rolle von einem Host in einem System zu erkennen ist sehr wichtig damit 
+	- Wir durchsuchen Hosts auch nach Passwoertern, SSH Keys, Shares auf lokalen Maschinen, Scripts, Konfigurations Dateien, Dokumente usw
+	- Hauptziel ist die Auswirkung von einem Exploit zu zeigen
+
+- Persistance:
+	- Hier wollen wir die Verbindung zu einem exploited Host persistent machen
+
+- Privilege Escalation:
+	- Die Aufgabe ist die hoechsten Privilegien zu haben fuer Linux ist das root und fuer Windows ist es administrator/local administrator/SYSTEM
+
+- Data Exfiltration:
+	- Der Auftraggeber sollte ein Test-Datensatz anlegen den wir exfiltrieren muessen
+
+6. Lateral Movement:
+- Wenn wir die hoechstmoeglichen Rechte haben koennen wir uns durch das System bewegen nach anderen Hosts suchen von da aus koennen andere Schritte eingeschlagen werden
+
+###################################################################################################
+Penetration Testing Phases - Project Closeout
+1. Proof-of-Concept(PoC):
+- PoC ist eine Liste von Anweisungen von Befehlen wie eine Schwachstelle ausgenutzt werden kann
+- Dies kann mit Scripts und Dokumentationen geschehen
+- Script fuehren meistens dazu, dass nur die Teile im Skript angepasst werden
+- Wenn das Password schwach ist sollte nicht das Passwort geandert werden sondern die Passwort Richtlinie
+
+2. Post-Engagement:
+- Cleanup:
+	- Wenn wir mit dem Testen fertig sind muss das System gesaeubert werden
+	- Hierzu gehoeren Script, Tools, Konfigurationsdateien usw
+	- Alle Aktivitaeten sollten aufgezeichnet werden, damit das System schneller gesaeubert wird
+
+- Documentation and Reporting:
+	- Alle Schritte sollten dokumentiert werden
+	- Dazu gehoeren Screenshots, Command Output, Liste an infizierten Hosts usw
+	- Das Enddokument sollte auch von einer nicht-technischen Gruppe verstanden werden
+
+- Report Review Meeting:
+	- Die Dokumentation wir danach noch in einem Meeting besprochen und die wichtigsten Punkte werden besprochen
+
+- Deliverable Acceptance:
+	- Die erste Dokumentation wird mit DRAFT gekennzeichnet, falls der Client noch Fragen hat wird die Dokumentation noch einmal angepasst und mit FINAL gekennzeichent
+
+- Post-Remediation Testing:
+	- Bei den meisten Auftraegen ist die Pruefung der Behebung der Schwachstellen Teil des Projekts
+	- Nachdem der Kunde alle Schwachstellen beseitigt hat, werden diese nochmal ueberprueft
+	- Dafuer wird eine Tabelle erstellt indem alle Schwachstellen mit ihrem Sanierungsstatus aufgelistet ist
+
+- Role of the Pentester in Remediation:
+	- Das beseitigen von Schwachstellen gehoert nicht zu unseren Aufgaben, da dies zu einem Interessenkonflikt kommen koennte
+	- Der Befund kann naeher erklaert/demonstriert werden geloest darf dieses Problem aber nicht
+
+- Data Rentention:
+	- Nach einem Penetrationstest sollten alle Daten von einem Test fuer einen Zeitraum zwischengespeichert werden, falls der Client noch Fragen hat
+	- Mehr Informationen unter: https://listings.pcisecuritystandards.org/documents/Penetration_Testing_Guidance_March_2015.pdf
+
+- Close Out:
+	- Am Ende eines Penetrationstest wird eine Rechnung gestellt und eine Umfrage nach Kundenzufriedenheit gestellt, damit das Team sehen kann was noch zu verbessern ist
+
+###################################################################################################
+Preparing for Real-World Pentests:
+1. Practice:
+- Ausser sehr guten technischen Kenntnissen benoetigen wir ausserdem Softskills
+- Schriftliche und muendliche Skills sind genauso wichtig, damit die Kommunikation zwischen dem Client und dem Angreifer so fluessig ablaeuft wie nur moeglich
+- 
