@@ -1,0 +1,260 @@
+Network Enumeration with Nmap
+Introduction:
+1. Enumeration:
+- Enumeration ist der wichtigste Teil des Penetrationstest
+- Es identifiziert alle Wege wie ein Ziel angegriffen werden konnte
+- Es ist wichtig sich mit den Services auszukennen und wie sie miteinander interargieren
+- An die meisten Informationen gelangt man aufgrund von miskonfiguration
+- Enumeration sollte nicht nur automatisiert erfolgen, da dadurch viele Informationen uebersehen werden koennen somit muessen auch manuelle Enumertion vorgenommen werden
+
+2. Introduction to Nmap:
+- Network Mapper(Nmap) ist ein Open-source Networkanalyse Tools
+- Es scannt Netzwerke nach Hosts und identifiziert alle Services, Anwendungen inklusive Version, Name usw
+- Es kann ausserdem Paketfilter, Firewalls, IDS usw erkennen
+
+- Use Cases:
+	- Network Mapping
+	- Firewall pruefen und IDS Einstellungen ueberpruefen
+	- Offfene Ports pruefen
+
+- Nmap Architecture:
+	- Nmap bietet viele verschiedene Scans an:
+		- Host discovery
+		- Port scanning
+		- Service detection and enumeration
+		- OS detection
+
+- Sytax:
+	- nmap <scan type> <options> <target>
+
+- Scan Techniques:
+	- Mit -sS ist die Scanmethode TCP-SYN, hier sendet nmap ein Paket mit einem SYN Flag an einen Port um den Service zu bekommen
+	- Wenn wir einen SYN-ACK Flag bekommen ist der Port offen
+	- Ein RST Flag heisst der Port ist geschlossen
+	- Wenn das Paket nicht zuerueck kommt wird es als rausgefiltert ausgegeben, das Paket wurde eventuell von der Firewall, ... rausgefilert
+###################################################################################################
+Host Enumeration
+1. Host Discovery:
+- Bei einem internen Pentest sollten wir uns zuerst eine Uebersicht vom Netzwerk machen
+- Dies fuehrt Nmap mithilfe von ICMP echo requests aus
+
+- Scan Network Range:
+	- nmap 10.129.2.0/24 -sn
+	- "10.129.2.0/24" Ziel Netzwerk zum scannen
+	- "-sn" Keine Ports scannen
+	- "-oA tnet" Gibt das Resultat in einem Format aus welches mit tnet beginnt
+
+- Scan IP List:
+	- Bei einem internen Penetrationstest wird meistens eine IP Liste mit Hosts vorgegeben
+	- Bei Nmap gibt es die Option, dass mit fertigen Listen gearbeitet werden kann
+	- "hosts.lst" ist eine Liste an Hosts
+	- nmap -sn -oA tnet -iL hosts.lst
+	- "-sn" Siehe oben Zeile 44
+	- "-oA tnet" Siehe oben Zeile 45
+	- "iL host.lst" Benutzt die Liste die wir angegeben haben in diesem Fall host.lst
+
+- Scan Multiple IPs:
+	- Es ist auch moeglich die zu scannenden IP-Adressen zu spezifizieren
+	- sudo nmap -sn -oA tnet 10.129.2.18 10.129.2.19 10.129.2.20
+	- oder
+	- sudo nmap -sn -oA tnet 10.129.2.18-20
+
+- Scan Single IP:
+	- Bevor wir einen einzelnen Host scannen koennen sollten ueberprueft werden, ob der Host am Leben ist 
+	- sudo nmap 10.129.2.18 -sn -oA host 
+	- "-sn" Siehe oben Zeile 44
+	- "-oA host" Giebt Resulat aus angefangen mit dem Namen host
+	
+	- nmap 10.129.2.18 -sn -oA host -PE --packet-trace 
+	- "-PE" Beim scannen wird ein ICMP Echo request benutzt
+	- "--packet-trace" Zeigt alle Paket die gesendet und empfangen wurden sind
+
+	- nmap 10.129.2.18 -sn -oA host -PE --reason
+	- "--reason" Gibt den Grund fuer die Ausgabe
+
+	- nmap 10.129.2.18 -sn -oA host -PE --packet-trace --disable-arp-ping 
+	- "--disable-arp-ping" Deaktiviert ARP Pings
+
+2. Host and Port Scanning:
+- Nachdem wir gefunden haben ob der Host aktiv ist wollen wir genauerer Informationen ueber das System bekommen
+- Informationen koennten sein: Offene Ports mit Services, Service Versionen, Betriebssystem usw
+- Es gibt 6 verschiedene Zustaende von gescannten Ports:
+	- open: Eine Verbindung wurde etabliert, das kann TCP, UDP, SCTP usw sein
+	- closed: Das Paket wird zurueckgesendet mti einem RST Flag
+	- filtered: Das Paket ist nicht zum Client zurueckgeschickt worden
+	- unfiltered: Erfolt nur in einem TCP-ACK Scan, heisst das nicht zwischen Close der Open entschieden werden kann
+	- open|filtered: Zeigt das eine Firewall oder ein Paket den Port eventuell filtert
+	- closed|filtered: Tritt nur in IP ID idle Scans auf. Weist daraufhin, dass es unmoelich ist zu unterscheiden zwischen closed und filtered
+
+- Discovering Open TCP Ports:
+	- Nmap scannt standardmaessig die Top 1000 Ports mit der -sS Option
+	- Sonst wird der TCP Scan mit der Option -sT durchgefuehrt
+	- -p- Option scannt alle Ports
+	- Mit -p 22,23,24 koennen einzelne Ports gescannt werden
+	- --top-ports=10 scannt die 10 top Ports
+	- -F scannt die top 100 Ports
+
+- Nmap - Trace the Packets:
+	- nmap 10.129.2.28 -p 21 --packet-trace -Pn -n --disable-arp-ping
+	- "--packet-trace" Zeigt alle Pakete die gesendet und empfangen worden sind
+	- "-n" Deaktiviert die DNS-Aufloesung
+	- "--disable-arp-ping" Deaktiviert ARP Ping
+
+- Request:
+	- SENT (0.0023s): Nmap sendet Paket 
+	- TCP: Zeigt das Protokoll an
+	- 10.10.14.2:63090 >: Zeigt Quell IpAdresse und Port aus dem das Paket gesendet wird
+	- 10.129.2.28:21: Zeigt die Ziel IpAdresse
+	- S: SYN Flag vom Paket
+	- ttl=556 id=57623 ...: Zusaetzliche TCP-Header Parameter
+
+- Response:
+	- RCVD (0.0573s): Zeigt ein empfangenes Paket vom Ziel an
+	- TCP: Zeigt das Protokoll an
+	- 10.129.2.28:21 >: Zeigt die Zieladresse und Zielport an
+	- 10.10.14.2:63090: Zeigt unsere IpAdresse/Port
+	- RA: RST und ACK Flags von einem TCP Paket
+	- ttl=64 id=0: Zusaetzliche TCP-Header Parameter
+
+- Connect Scan:
+	- Der TCP Connect Scan -sT benutzt den TCP 3-Weg Handshake um zu ermitteln ob ein Port offen oder geschlossen ist
+	- Der Scan verschickt SYN Pakete und wartet auf eine Antwort
+	- Ein Port ist offen wenn ein Paket mit SYN-ACK zurueckkommt und geschlossen wenn es mit RST zurueckkommt
+	- Ist die genaueste Art einen Zustand eines Ports zu ermitteln, ausserdem ist es einer der heimlichsten Scans
+	- Laesst keine unvollendeten Verbindungen oder ungesendete Pakete zurueck 
+	- Wird selten von IDS und IPS entdeckt
+	- Ist langsamer als ein SYN Scan
+	- Ein Connect kann eine Firewall umgehen, da eine Firewall ausgehende Pakete erlaubt
+
+- Filtered Ports:
+	- Ein Port der als gefiltert gekennzeichnet worden ist kann mehrere Gruende haben
+	- Firewall koennen viele Regeln haben, die Verbindungen ablehnen
+	- Die Pakete koennen entweder dropped oder rejected werden
+	- Wenn ein Paket gedropped wird bekommt Nmap keine Antwort von dem Ziel
+	- --max-retries ist standardmaessig auf 1 deswegen wird Nmap eie weitere Anfrage stellen falls die Anfrage nicht angekommen ist
+	- Wenn die Anfragezeit groesser ist als bei allen anderen wurde das Paket wahrscheinlich gefiltert
+
+- Discovering Open UDP Ports:
+	- Mit -sU wird ein UDP Port Scan durchgefuehrt
+	- Viele Administratoren vergessen das filtern von UDP Ports
+	- UDP Scans dauern laenger als TCP Scans
+	- Ausserdem wird meistens keine Antwort gesendet, da die meisten Anwendung nicht fuer UDP konfiguriert worden sind
+	- Wenn eine ICMP Antwort mit Error Code 3 zurueck kommt ist der Port closed
+	- Fuer alle anderen Antworten ist der Port open|filtered
+
+- Mit der Option -sV koenen ausserdem andere Informationen ausgegeben werden wie Version, Service Name, usw
+
+3. Saving the Results:
+- Different Formats:
+	- Bei den verschiedensten Scans koennen wir die Resultate ausgeben
+	- Nmap kann in 3 verschiedenen Formaten ausgegeben werden:
+		- "-oN" Normale Ausgabe mit .nmap Dateiendung
+		- "-oG" Grepable Ausgabe mit .gnmap Dateiendung
+		- "-oX" XML Ausgabe mit .xml Dateiendung. Im Zusammenhang mit xsltproc kann die XML Datei mit HTML ausgegeben werden
+		- "-oA" Speichert Ausgaeb in allen Formaten
+	- Wenn kein Verzeichnis gegeben ist wird die Ausgabe in dem derzeitigen Verzeichnis gespeichert
+
+4. Service Enumeration:
+- Es ist wichtig die Version und Namen des Services der auf einem Port laeuft herauszufinden
+
+- Service Version Detection:
+	- Es wird empfolen zu Beginn einen schnellen Portscan durchzufuehren
+	- Versionen koennen mit -sV gescannt werden
+	- "--stats-every=5s" Zeigt den Fortschritt des Scans
+
+- Banner Grabbing
+	- Nmap sieht die Banner der gescannten Ports an und gibt sie aus
+	- Wenn die Version nicht durch das Banner bestimmt werden konnte, wird die Version durch ein Signatur Machting System identifiziert das dauert wesentlich laenger
+	- Manchmal kann Nmap manche Informationen nicht verwerten
+	- Wenn das nicht funktioniert kann eine Verbindung mit nc aufgebaut werden und mit tcpdump abgefangen werden
+
+5. Nmap Scripting Engine:
+- Nmap Secripting Engine(NSE) ist ein wertvolles Tool fuer Nmap
+- Es gibt vorgefertigte Script die wir benutzten koennen
+- Darunter gibt es 14 Kategorien: auth, broadcast, brute, default, discovery, dos, exploit, external, fuzzer, intrusive, malware, safe, version, vuln
+
+- Default Scripts:
+	- "-sC" ist das standardscript
+
+- Specific Scripts Category:
+	- "nmap <target> --script <category>"
+
+- Defined Scripts:
+	- "nmap <target> --script <script-name>, <script-name>, ..."
+
+- Nmap - Aggressive Scan:
+	- "-A" Scannt das Ziel mit Service Detetection(-sV), OS detection(-0), traceroute(--traceroute) und mit dem standard NSE Script (-sC)
+
+- Vulnerability Assessment:
+	- nmap <Target> -sV --script vuln
+	- Zeigt Informationen und Schwachstellen eines Ziels
+
+6. Performance:
+- Die Performance spielt eine grosse Roll ebei einem Scan dafuer gibt es einige Optionen:
+	- "-T" Stellt die Geschwindigkeit von 0 bis 5 hoeher ist schneller
+	- "--min-parallelism <number>" Gitb die Nummer an parallelen Portscans an
+	- "--max-rtt-timeout <time>" Maximale RTT Zeit 
+	- "--min-rate <number>" Minimale Anzahl von Paketen in gegebener Zeit
+	- "--max-retries <number>" Wie oft wird der Scan auf einem Port wiederholt
+
+- Timeouts:
+	- Wenn Nmap ein Paket sendet braucht es eine Zeit bis die Antwort zurueckkommt, diese Zeit wird Round-Trip-Time (RTT) gennant
+	- Nmap startet mit einer hohen timeout Zeit (--min-rtt-timeout) von 100ms
+	- "--initial-rtt-timeout" Standard RTT Timeout Zeit auf unter 100 setzen
+	- "max-rtt-timeout" Max RTT Timeout Zeit auf 100 setzen
+	- Die beiden Optionen sollten die Zeit des Scans deutlich verringern
+
+- Max Retries:
+	- Ein weitere Weg die Geschwindigkeit zu verbessern ist die Wiederholungsrate (--max-retries) anzupassen
+	- Der Standardwert ist 10
+	- Wenn Nmap keine Antwort von diesem Port erhaelt werden weitere Pakete gesendet und dann nach der maximalen Anzahl uebersprungen
+
+- Rates:
+	- Bei einem Whitebox Penetrationstest kennen wir vielleicht die Netzwerk Bandbreite und koennen somit die minimum rate von gesendeten Paketen (--min-rate <number>) definieren
+
+- Timing:
+	- Weil solche Einstellungen wie bei einem Blackbox Test nicht immer bekannt ist gibt es bei NMAP eine Vorlage (-T <0-5>) 
+	- Die Standardvorlage ist "-T 3" 0 ist der schwaechste Scan und 5 der aggressivste 
+
+###################################################################################################
+Bypass Security Measures
+1. Firewall and IDS/IPS Evasion
+- In Nmap gibt es verschiedene Wege wie Firewall Regeln und IDS/IPS umgangen werden kann
+
+- Firewalls:
+	- Eine Firewall ueberwacht den Netzwerkverkehr mithilfe eines Regelsatzes
+
+- IDS/IPS:
+	- Intrusion Detection Systems(IDS) scannt das Netzwerk nach poteniellen Attacken und analysiert diese
+	- Intrusion Prevention System(IPS) verhindert ein eindrigen von einem Angreifer in das System mithilfe von Muster und Signatur Vergleich
+
+- Determine Firewalls and Their Rules:
+	- Eine Paket kann entweder dropped oder rejected werden
+	- Dropped Pakete werden ignoriert
+	- Bei Rejected Pakete wird ein RST Flag zurueckgeschickt
+	- Ein TCP ACK Scan (-sA) ist schwierigier als ein SYN Scan(-sS) oder ein Conncect Scan(-sT) fuer ein IDS/IPS oder Firewall System zu erkennen
+	- Die meisten Verbindungsversuche (mit einem SYN Flag) nach aussen werden von der Firewall blockiert
+	- Die meisten Pakete mit einem ACK Flag werden oft durchgelassen von der Firewall, da die Firewall nicht unterscheiden kommt ob das ACK Flag von aussen oder innen initialisiert wurde
+
+- Detect IDS/IPS:
+	- IDS/IPS sind passive Systeme und sind schwieriger zu umgehen
+	- Das IDS wird getriggert wenn ein Port aggressiv gescannt wird
+	- Ein Weg ein IPS System zu erkennen ist Scans von einem Port durchzufuehren wenn dieser Host gesperrt wird wird ein andere genommen
+
+- Decoys:
+	- Der Administrator kann spezifische Subnets von der Verbindung ausschliessen
+	- Ein Weg ist ein Koeder Scan (-D), hier werden IP Adressen zufaellig in den IP Header eingefuegt mit "RND:5" kann eine Anzahl an IP Adressen angelegt werden
+	- Mit "-S" kann ein Ziel von einer anderern IP Adresse aus gescannt werden
+
+- DNS Proxying:
+	- Nmap fuehrt standardmaessig eine DNS Aufloesung durch, diese finden auf dem UDP/TCP Port 53 statt
+	- Mit "--dns-server <ns>,<ns>" kann ein DNS Server angegeben werden
+	- Wenn wir uns in einer demilitirarized Zone(DMZ) befinden sollten wir die Firmen DNS Server benutzten, da diese vertrauenwuerdiger sind als die vom Internet
+	- Wir koenen den TCP Port 53 nehmen (--source-port) fuer den Scan nehmen, wenn die IDS/IPS die Pakete von diesem Port nicht filtern
+
+2. Firewall and IDS/IPS Evasion - Easy Lab
+3. Firewall and IDS/IPS Evasion - Medium Lab
+4. Firewall and IDS/IPS Evasion - Hard Lab
+
+
+

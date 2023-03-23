@@ -1,0 +1,191 @@
+Information Gathering - Web Edition
+Introduction
+1. Information Gathering:
+- Die Informationsbeschaffung ist der erste Schritt bei jedem Penetrationstest
+- Hilft und Angriffsflaechen und die verwendete Technologie zu verstehen, manchmal auch Entwicklungsumgebungen oder nicht gewartete Infrastruktur
+- Es ist immer wichtig herauszufinden mit welcher Technologie die Webseite programmiert worden ist
+- Es gibt folgende Ziele die viele Informationen enthalten:
+	- Domains and Subdomains: Oft bekommen wir von dem Unternehmen eine Liste von Domainen und Subdomainen. Versteckte oder vergessene Subdomainen koennen alte Versionen von Anwendungen enthalten. 
+	- IP ranges: Wenn wir nicht auf einem spezifischen Bereich beschraenkt sind wollen wir so viel wie moeglich ueber unser Ziel herausfinden
+	- Infrastructure: Wir wollen wissen welche Technologie verwendet wird. Ob ein Content-Management-System(CMS) wie Wordpress usw verwendet wird. Welcher Webserver (Nginx, Apache usw) verwendet wird. Welches Frameworks oder Datenbank verwendet wird
+	- Virtual Hosts: Zeigt an, dass eine Organisation mehrere Anwendungen auf demselben Webserver hostet
+
+Es gibt zwei Arten von dem Prozess:
+- Passive Information Gathering:
+	- Wir interagieren nicht direkt mit der Zielperson. Stattedessen sammeln wir Informationen mit Suchmaschinen, Whois, Zertifikatsinformationen
+- Active Information Gathering:
+	- Hierzu gehoert Port-Scanning, DNS-Enumeration, Brute-Forcing von Verzeichnissen, Enumeration von virtuellen Hosts und Crawling/Spidering von Webanwendungen
+
+- Es ist wichtig alle Informationen gut zu organisieren
+- Es gibt Webseiten bei denen diese Techniken ueberprueft werden koennen eine dieser Website ist Hackerone
+
+
+Passive Information Gathering:
+1. WHOIS:
+- WHOIS kann mit "White Pages" fuer Domainnamen verglichen werden
+- Mit WHOIS koennen Informationen ueber die Domaine ausgegeben werden
+- Die Internet Corporation of Assigned Names and Numbers(ICANN) verlangt von allen Registrierungsstellen von Domainen die Kontaktinformationen des Inhabers
+- Ein Beispiel von einem Whois Befehl ist:
+	- export TARGET="facebook.com"
+	- whois $TARGET
+
+2. DNS
+- Ein Domain Name System ist ein Telefonbuch fuer Domainen
+- Ein DNS uebersetzt Domainen wie hackthebox.com in eine IP Adrese die mit dem Webserver kommunizieren kann
+
+- Nslookup & DIG:
+	- Mit nslookup koennen wir Informationen ueber die DNS Server und deren Hosts und Domainen bekommen
+	- Mit dem Befehl nslookup "TARGET" nslookup ausgefuehrt
+	- Mit @<nameserver/ip> kann auch ein Nameserver spezifisch angegeben werden
+
+	- Dig gibt uns mehr Informationen die nuetzlich sind
+	- Mit dig "TARGET" @<nameserver/ip> wird dig ausgefuehrt
+
+- Querying: A Record for a Subdomain:
+	- nslookup -query=A "TARGET"
+	- dig a <Target> @<nameserver/ip>
+
+- Querying: PTR Records for an IP Address:
+	- nslookup -query=PTR <IP_Adress>
+	- dig -x <IP_Adress> @<nameserver/ip>
+
+- Querying: ANY Existing Records
+	- nslookup -query=ANY "TARGET"
+	- dig any <Target> @<nameserver/ip>
+
+- Querying: TXT Records
+	- nslookup -query=TXT "Target"
+	- dig txt <Target> @<nameserver/ip>
+
+- Querying: MX Records
+	- nslookup -query=MX "Target"
+	- dig mx <Target> @<nameserver/ip>
+
+- Organisationen verwenden IP Adressen im Internetm, sind aber meistens nicht der Inhaber
+- Kleiner Organisationen verlassen sich meist auf andere Provider fuer das hosten der Dienste
+- Wir koennen nslookup und whois miteinander kombinieren
+- Mit nslookup koennen wir die Adresse des DNS Server rausfinden und mit whois mehr Informationen von dem Provider einholen
+
+3. Passive Subdomain Enumeration:
+- Subdomain Enumeration bezieht sich auf die Zuordnung aller verfuegbaren Subdomainen innerhalb eines Domainennamens
+
+- VirusTotal:
+	- VirusTotal gibt DNS-Aufloesungen aus
+
+- Certificates:
+	- Weitere Informationsquellen sind SSL/TLS Zertifikate ueber die Domainen usw eingelesen werden kann, zwei Hauptressourcen sind: 
+		- https://search.censys.io/
+		- https://crt.sh
+	- Es kann auch mit Befehle im Terminal ausgegeben werden: curl -s "https://crt.sh/?q="TARGET"&output=json" | jq -r '.[] | "\(.name_value)\n\(.common_name)"' | sort -u > "${TARGET}_crt.sh.txt"
+
+- TheHarvester:
+	- TheHarvester sammelt Informationen wie E-Mails, Namen, Subdomainen, IP-Adressen, URLs usw von unterschiedlichen Quellen 
+	- Um das zu automatisieren benoetigen wir eine source.txt Datei in der wir alle Suchmaschinen eintragen 
+	- TheHarvester ausfuehren
+	- cat sources.txt | while read source; do theHarvester -d "TARGET" -b $source -f "${source}_'TARGET'";done
+	- Extrahiert alle Subdomainen
+	- cat *.json | jq -r '.hosts[]' 2>/dev/null | cut -d':' -f 1 | sort -u > "${TARGET}_theHarvester.txt"
+
+4. Passive Infrastructure Identification:
+- Netcraft kann uns Informationen ueber Server geben
+- Wir koennen die Seite https://sitereport.netcraft.com besuchen
+
+- Wayback Machine:
+	- Die Wayback Machine sieht die Internet Archive durch und findet alte Versionen von Source Code von Webseiten
+
+
+##############################################################################################################
+Active Information Gathering:
+1. Active Infrastructure Identification:
+- Die Infrastruktur einer Webanwendung ist das, was sie am Laufen haelt und die Funktionen ermoeglicht
+- Webserver sind direkt in den Betrieb einer Webanwendung eingebunden
+
+- Web Servers:
+	- Wir muessen so viele Informationen wie moeglich ueber den Webserver finden
+	- Informationen koennen URL rewriting, Load balancing, Script engines usw sein
+	- HTTP Headers:
+		- X-Powered-By Header: Dieser Header wird uns mitteilen welche Web App verwendet wird wie PHP,JSP usw
+		- Cookies: Cookies koennen auch viele wichtige Informationen beinhalten
+		- Mit curl -I "URL" kann der HTTP Header ausgegeben werden
+
+- Whatweb:
+	- Whatweb erkennt Webtechnologien, einschliesslich Content-Management-Systems(CMS), Bloggingplattformen, Javascript Bibliotheken, Webserver usw
+
+- WafW00F ist ein Webanwendung Firewall Fingerprinting Tool, welches Anfragen sendet und die Antwort analysiert
+- Aquatoen ist ein automatiesiertes Tool um die Angriffsflaeche von HTTP Anwendung aufzulisten, die Ausgabe wird als HTML Datei ausgegeben
+
+2. Active Subdomain Enumeration:
+- Wie koennen eine aktive Subdomain Enumeration durchfuehren um die Infrastruktur eines Unternehmens oder einen DNS-Server von einem Drittanbierter zu untersuchen
+
+- ZoneTransfers:
+	- Bei einem Zonentransfer erhaelt ein sekundaerer DNS-Server Informationen vom primaeren DNS-Server
+	- 1. Identifying Nameservers:
+		- nslookup -type=NS "Nameserver"
+	- 2. Testing for ANY and AXFR Zone Transfer:
+		- nslookup -type=any -query=AXFR "Nameserver"
+	- dig @<Nameserver> NS axfr "Domain"
+
+- Gobuster:
+	- Gobuster ist ein Tool mit dem eine Subdomain Enumeration durchgefuehrt werden kann
+	- Beispiel fuer einen Gobuster DNS Befehl:
+		- export TARGET="facebook.com"
+		- export NS="d.ns.facebook.com"
+		- export WORDLIST="numbers.txt"
+		- gobuster dns -q -r "${NS}" -d "${TARGET}" -w "${WORDLIST}" -p ./patterns.txt -o "gobuster_${TARGET}.txt"
+
+3. Virual Hosts:
+- Ein virtueller Host ist eine Funktion mit der mehrere Webseiten auf einem Server gehostet werden kann
+- Es gibt zwei Moeglichkeiten virtuelle Hosts zu konfigurieren:
+	- IP-basiertes viruelles Hosting
+	- Namen-basiertes virtuelles Hosting
+
+- IP-basiertes virtuelles Hosting:
+	- Ein Host kann mehrere Netzwerkinterfaces haben
+	- Fuer jede Netzwerkschnittstelle eines Hosts koennen mehrere IP-Adresse
+
+- Name-basiertes virtuelles Hosting:
+	- Die Unterscheidung, fuer welche Domaine der Dienste angefordert wurde, erfolgt auf der Anwendungsebene
+	- Intern auf dem Server wird dies durch verschiedene Ordner getrennt
+	- Die gleiche IP kann heissen, dass es virtuelle Hosts sind oder das die Hosts hinter einem Proxy sitzen
+	- Webseiten koennen mit verschiedenen Hosts aufgerufen werden mit <curl -s ${URL} -H "Host: ${HOST}">
+	- In Patriot gibt es unter /opt/useful/SecLists/Discovery/DNS/namelist.txt eine Liste von DNS Domainen um zu sehen wie lang der Content-Length Header ist, welche angibt wie viele Daten im Body sind
+	- vHosts Fuzzing:
+		- cat ./vhosts | while read vhost;do echo "\n********\nFUZZING: ${vhost}\n********";curl -s -I ${URL} -H "HOST: ${vhost}.${HOST}" | grep "Content-Length: ";done
+
+- Automating Virtual Hosts Discovery:
+	- Fuer kleine Listen an virtuellen Hosts kann dies manuell durchgefuehrt werden
+	- Mit ffuf kann der Prozess beschleunigt und automatisiert werden 
+	- Der Webserver antwortet jedes Mal mit einer statischen Website wenn wir einen ungueltigen virtuellen Hosts im Host-Header angeben
+	- Wir koennen die Option filter by size -fs verwenden, um die Standardantwort zu verwerfen, da diese immer gleich gross ist
+	- ffuf -w ./vhosts -u ${URL} -H "HOST: FUZZ.${HOST_Name}" -fs ${SIZE_OF_STATIC_WEBSITE}
+
+4. Crawling:
+- Das Crawling einer Webseite ist ein automatischer Prozess zum erkunden einer Website und zur auflistung von Ressourcen
+- Crawling wird verwendet um so viele Seiten und Unterverzeichnisse einer Website zu finden
+
+- ZAP:
+	- Zed Attack Proxy(ZAP) ist ein Open-Source-Web-Proxy derum zum Open Web Application Security Project(OWASP) gehoert
+	- Es ermoeglicht manuelle und automatisierte Sicherheitstest fuer Webanwendungen durchzufuehren
+	- Wenn ZAP als Proxy verwendet wird kann der Datenverkehr abgefangen und manipuliert werden
+
+- FFuF:
+	- Das ZAP Spider Modul enumeriert Ressourcen aus Links und Forms, kann aber wichtige Informationen wie hidden Folder oder Backup Files uebersehen
+	- Wir koennen ffuf verwenden um Dateien und Ordner entdecken die wir beim einfachen Durchsuchen der Website nicht finden koennen
+
+- Sensitive Information Disclosure:
+	- In der Regel verwalten Webserver und die Webanwendungen die Dateien, die zum funktionieren benoetigt werden
+	- Backupt oder nicht referenzierte Dateien sind ueblich diese sind leicht zu finden unt erhalten wichtige Informationen wie Anmeldedaten
+
+##############################################################################################################
+Putting it all Together
+1. Information Gathering - Web-Skill Assessment:
+- TARGET="githubapp.com"
+- gobuster dns -q -r "${NS}" -d "${TARGET}" -w "${WORDLIST}" -p ./patterns.txt -o "gobuster_${TARGET}.txt"
+- gobuster dns -d githubapp.com -w ./namelist.txt 
+
+
+
+
+Notizen:
+https://0xffsec.com/handbook/information-gathering/subdomain-enumeration/
+https://subdomainfinder.c99.nl/

